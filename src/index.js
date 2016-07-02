@@ -10,6 +10,8 @@ import {
 import httpError from 'http-errors';
 import url from 'url';
 
+import { parseBody } from './parseBody';
+
 export default function graphqlHTTP(options) {
     if (!options) {
         throw new Error('GraphQL middleware requires options.');
@@ -30,7 +32,7 @@ export default function graphqlHTTP(options) {
         let validationRules;
 
         let optionsData;
-        let responseData; //the content of response.body
+        let result; //the content of response.body
         try {
             // Resolve the Options to get OptionsData.
             const optionsData = await Promise.resolve(
@@ -71,18 +73,150 @@ export default function graphqlHTTP(options) {
                 throw httpError(405, 'GraphQL only supports GET and POST requests.');
             }
 
-        } catch (error) {
-            // If an error was caught, report the httpError status, or 500.
-            ctx.response.status = error.status || 500;
-            responseData = { errors: [error] };
-        }
-        // Format any encountered errors.
-        if (responseData && responseData.errors) {
-            responseData.errors = responseData.errors.map(formatErrorFn || formatError);
-        };
-        const data = JSON.stringify(responseData, null, pretty ? 2 : 0);
-        ctx.response.type = 'application/json';
-        ctx.response.body = data;
+            //now parse body;
+            let bodyData = await parseBody(ctx.request);
 
-    }; //end middleware
+            const urlData = ctx.request.url && url.parse(ctx.request.url, true).query || {};
+            showGraphiQL = graphiql && canDisplayGraphiQL(ctx.request, urlData, bodyData);
+
+            // Get GraphQL params from the request and POST body data.
+            const params = getGraphQLParams(urlData, bodyData);
+            query = params.query;
+            variables = params.variables;
+            operationName = params.operationName;
+
+            // If there is no query, but GraphiQL will be displayed, do not produce
+            // a result, otherwise return a 400: Bad Request.
+            if (!query) {
+                if (showGraphiQL) {
+                    return null;
+                }
+                throw httpError(400, 'Must provide query string.');
+            }
+
+            // GraphQL source.
+            const source = new Source(query, 'GraphQL request');
+
+            // Parse source to AST, reporting any syntax error.
+            let documentAST;
+            try {
+                documentAST = parse(source);
+            } catch (syntaxError) {
+                // Return 400: Bad Request if any syntax errors errors exist.
+                ctx.response.statusCode = 400;
+                result =  { errors: [syntaxError] };
+            }
+
+            // Validate AST, reporting any errors.
+            const validationErrors = validate(schema, documentAST, validationRules);
+            if (validationErrors.length > 0) {
+                // Return 400: Bad Request if any validation errors exist.
+                ctx.response.statusCode = 400;
+                result =  { errors: validationErrors };
+            }
+
+            // Only query operations are allowed on GET requests.
+            if (ctx.request.method === 'GET') {
+                // Determine if this GET request will perform a non-query.
+                const operationAST = getOperationAST(documentAST, operationName);
+                if (operationAST && operationAST.operation !== 'query') {
+                    // If GraphiQL can be shown, do not perform this query, but
+                    // provide it to GraphiQL so that the requester may perform it
+                    // themselves if desired.
+                    if (showGraphiQL) {
+                       result =  null;
+                    }
+
+                    // Otherwise, report a 405: Method Not Allowed error.
+                    ctx.response.setHeader('Allow', 'POST');
+                    throw httpError(
+                        405,
+                        `Can only perform a ${operationAST.operation} operation ` +
+                        'from a POST request.'
+                    );
+                }
+            }
+            // Perform the execution, reporting any errors creating the context.
+            try {
+                return execute(
+                    schema,
+                    documentAST,
+                    rootValue,
+                    context,
+                    variables,
+                    operationName
+                );
+            } catch (contextError) {
+                // Return 400: Bad Request if any execution context errors exist.
+                ctx.response.statusCode = 400;
+                result = { errors: [contextError] };
+            };
+
+    } catch (error) {
+        // If an error was caught, report the httpError status, or 500.
+        ctx.response.status = error.status || 500;
+        result = { errors: [error] };
+    }
+
+    // Format any encountered errors.
+      if (result && result.errors) {
+        result.errors = result.errors.map(formatErrorFn || formatError);
+      }
+      // If allowed to show GraphiQL, present it instead of JSON.
+      if (showGraphiQL) {
+        const data = renderGraphiQL({
+          query, variables,
+          operationName, result
+        });
+        ctx.response.type='text/html';
+        ctx.response.body=data;
+      } else {
+        // Otherwise, present JSON directly.
+        const data = JSON.stringify(result, null, pretty ? 2 : 0);
+        ctx.type='application/json';
+        ctx.response.body=data;
+      };
+
+}; //end middleware
 }; //end graphqlHTTP
+
+
+/**
+ * Helper function to get the GraphQL params from the request.
+ */
+function getGraphQLParams(urlData, bodyData) {
+  // GraphQL Query string.
+  const query = urlData.query || bodyData.query;
+
+  // Parse the variables if needed.
+  let variables = urlData.variables || bodyData.variables;
+  if (variables && typeof variables === 'string') {
+    try {
+      variables = JSON.parse(variables);
+    } catch (error) {
+      throw httpError(400, 'Variables are invalid JSON.');
+    }
+  }
+
+  // Name of GraphQL operation to execute.
+  const operationName = urlData.operationName || bodyData.operationName;
+
+  return { query, variables, operationName };
+}
+
+/**
+ * Helper function to determine if GraphiQL can be displayed.
+ */
+function canDisplayGraphiQL(
+  request,
+  urlData,
+  bodyData
+) {
+  // If `raw` exists, GraphiQL mode is not enabled.
+  const raw = urlData.raw !== undefined || bodyData.raw !== undefined;
+  // Allowed to show GraphiQL if not requested as raw and this request
+  // prefers HTML over JSON.
+  //modify:using request.accepts instead od accepts.
+  return !raw && request.accepts(request).types([ 'json', 'html' ]) === 'html';
+
+}

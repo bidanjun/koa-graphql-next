@@ -1,7 +1,7 @@
 {
   "name": "koa-graphql-next",
   "version": "0.0.1",
-  "description": " GraphQL HTTP middleware for koa v2,ported from express-graphql,change test framework to ava.js.",
+  "description": "GraphQL HTTP middleware for koa v2,ported from express-graphql,change test framework to ava.",
   "main": "index.js",
   "scripts": {
     "start": "./node_modules/.bin/nodemon --watch ./ index.babel.js",
@@ -37,9 +37,12 @@
     "url": "https://github.com/bidanjun/koa-graphql-next/issues"
   },
   "homepage": "https://github.com/bidanjun/koa-graphql-next#readme",
-   "dependencies": {
+  "dependencies": {
+    "content-type": "^1.0.2",
     "graphql": "^0.6.0",
-    "koa": "^2.0.0"
+    "http-errors": "^1.5.0",
+    "koa": "^2.0.0",
+    "raw-body": "^2.1.7"
   },
   "devDependencies": {
     "ava": "^0.15.2",
