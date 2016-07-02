@@ -82,83 +82,87 @@ export default function graphqlHTTP(options) {
 
             //now parse body;
             let bodyData = await parseBody(ctx);
-            const urlData = ctx.request.url && url.parse(ctx.request.url, true).query || {};
-            showGraphiQL = graphiql && canDisplayGraphiQL(ctx.request, urlData, bodyData);
 
-            // Get GraphQL params from the request and POST body data.
-            const params = getGraphQLParams(urlData, bodyData);
-            query = params.query;
-            variables = params.variables;
-            operationName = params.operationName;
 
-            // If there is no query, but GraphiQL will be displayed, do not produce
-            // a result, otherwise return a 400: Bad Request.
-            if (!query) {
-                if (showGraphiQL) {
-                    return null;
-                }
-                throw httpError(400, 'Must provide query string.');
-            }
+            result = await new Promise(resolve => {
 
-            // GraphQL source.
-            const source = new Source(query, 'GraphQL request');
+                const urlData = ctx.request.url && url.parse(ctx.request.url, true).query || {};
+                showGraphiQL = graphiql && canDisplayGraphiQL(ctx.request, urlData, bodyData);
 
-            // Parse source to AST, reporting any syntax error.
-            let documentAST;
-            try {
-                documentAST = parse(source);
-            } catch (syntaxError) {
-                // Return 400: Bad Request if any syntax errors errors exist.
-                ctx.response.statusCode = 400;
-                result = { errors: [syntaxError] };
-            }
+                // Get GraphQL params from the request and POST body data.
+                const params = getGraphQLParams(urlData, bodyData);
+                query = params.query;
+                variables = params.variables;
+                operationName = params.operationName;
 
-            // Validate AST, reporting any errors.
-            const validationErrors = validate(schema, documentAST, validationRules);
-            if (validationErrors.length > 0) {
-                // Return 400: Bad Request if any validation errors exist.
-                ctx.response.statusCode = 400;
-                result = { errors: validationErrors };
-            }
-
-            // Only query operations are allowed on GET requests.
-            if (ctx.request.method === 'GET') {
-                // Determine if this GET request will perform a non-query.
-                const operationAST = getOperationAST(documentAST, operationName);
-                if (operationAST && operationAST.operation !== 'query') {
-                    // If GraphiQL can be shown, do not perform this query, but
-                    // provide it to GraphiQL so that the requester may perform it
-                    // themselves if desired.
+                // If there is no query, but GraphiQL will be displayed, do not produce
+                // a result, otherwise return a 400: Bad Request.
+                if (!query) {
                     if (showGraphiQL) {
-                        result = null;
+                        resolve(null);
                     }
-
-                    // Otherwise, report a 405: Method Not Allowed error.
-                    ctx.response.set('Allow', 'POST');
-                    throw httpError(
-                        405,
-                        `Can only perform a ${operationAST.operation} operation ` +
-                        'from a POST request.'
-                    );
+                    throw httpError(400, 'Must provide query string.');
                 }
-            }
-            // Perform the execution, reporting any errors creating the context.
-            try {
-                result = await execute(
-                    schema,
-                    documentAST,
-                    rootValue,
-                    context,
-                    variables,
-                    operationName
-                );
-            } catch (contextError) {
-                // Return 400: Bad Request if any execution context errors exist.
-                ctx.response.statusCode = 400;
-                result = { errors: [contextError] };
 
-            };
+                // GraphQL source.
+                const source = new Source(query, 'GraphQL request');
 
+                // Parse source to AST, reporting any syntax error.
+                let documentAST;
+                try {
+                    documentAST = parse(source);
+                } catch (syntaxError) {
+                    // Return 400: Bad Request if any syntax errors errors exist.
+                    ctx.response.status = 400;
+                    resolve({ errors: [syntaxError] });
+                }
+
+                // Validate AST, reporting any errors.
+                const validationErrors = validate(schema, documentAST, validationRules);
+                if (validationErrors.length > 0) {
+                    // Return 400: Bad Request if any validation errors exist.
+                    ctx.response.status = 400;
+                    resolve({ errors: validationErrors });
+
+                }
+
+                // Only query operations are allowed on GET requests.
+                if (ctx.request.method === 'GET') {
+                    // Determine if this GET request will perform a non-query.
+                    const operationAST = getOperationAST(documentAST, operationName);
+                    if (operationAST && operationAST.operation !== 'query') {
+                        // If GraphiQL can be shown, do not perform this query, but
+                        // provide it to GraphiQL so that the requester may perform it
+                        // themselves if desired.
+                        if (showGraphiQL) {
+                            resolve(null);
+                        }
+
+                        // Otherwise, report a 405: Method Not Allowed error.
+                        ctx.response.set('Allow', 'POST');
+                        throw httpError(
+                            405,
+                            `Can only perform a ${operationAST.operation} operation ` +
+                            'from a POST request.'
+                        );
+                    }
+                }
+                // Perform the execution, reporting any errors creating the context.
+                try {
+                    resolve(execute(
+                        schema,
+                        documentAST,
+                        rootValue,
+                        context,
+                        variables,
+                        operationName
+                    ));
+                } catch (contextError) {
+                    // Return 400: Bad Request if any execution context errors exist.
+                    ctx.response.status = 400;
+                    resolve({ errors: [contextError] });
+                };
+            }); //end promise
         } catch (error) {
             // If an error was caught, report the httpError status, or 500.
             ctx.response.status = error.status || 500;
@@ -207,7 +211,6 @@ function getGraphQLParams(urlData, bodyData) {
 
     // Name of GraphQL operation to execute.
     const operationName = urlData.operationName || bodyData.operationName;
-
     return { query, variables, operationName };
 }
 

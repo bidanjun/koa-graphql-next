@@ -128,234 +128,224 @@ test('allows GET with query param', async (t) => {
         schema: TestSchema
     }));
     const server = app.listen();
-    let serverRes= await request(server)
+    let response = await request(server)
         .get(urlString({
             query: '{test}'
         }));
 
-    t.is(serverRes.res.text,'{"data":{"test":"Hello World"}}');
+    t.is(response.res.text, '{"data":{"test":"Hello World"}}');
 });
 
-    //   it('allows GET with variable values', async () => {
-    //     const app = server();
+test('allows GET with variable values', async (t) => {
+    const app = new koa();
+    app.use(graphqlHTTP({
+        schema: TestSchema
+    }));
+    const server = app.listen();
+    let response = await request(server)
+        .get(urlString({
+            query: 'query helloWho($who: String){ test(who: $who) }',
+            variables: JSON.stringify({ who: 'Dolly' })
+        }));
 
-    //     app.use(urlString(), graphqlHTTP({
-    //       schema: TestSchema
-    //     }));
+    t.is('{"data":{"test":"Hello Dolly"}}', response.res.text);
 
-    //     const response = await request(app)
-    //       .get(urlString({
-    //         query: 'query helloWho($who: String){ test(who: $who) }',
-    //         variables: JSON.stringify({ who: 'Dolly' })
-    //       }));
+});
 
-    //     expect(response.text).to.equal(
-    //       '{"data":{"test":"Hello Dolly"}}'
-    //     );
-    //   });
+test('allows GET with operation name', async (t) => {
+    const app = new koa();
+    app.use(graphqlHTTP({
+        schema: TestSchema
+    }));
+    const server = app.listen();
+    let response = await request(server)
+        .get(urlString({
+            query: `
+              query helloYou { test(who: "You"), ...shared }
+              query helloWorld { test(who: "World"), ...shared }
+              query helloDolly { test(who: "Dolly"), ...shared }
+              fragment shared on QueryRoot {
+                shared: test(who: "Everyone")
+              }
+            `,
+            operationName: 'helloWorld'
+        }));
 
-    //   it('allows GET with operation name', async () => {
-    //     const app = server();
+    t.deepEqual(JSON.parse(response.res.text), {
+        data: {
+            test: 'Hello World',
+            shared: 'Hello Everyone',
+        }
+    });
+});
 
-    //     app.use(urlString(), graphqlHTTP(() => ({
-    //       schema: TestSchema
-    //     })));
+test('Reports validation errors', async (t) => {
+    const app = new koa();
+    app.use(graphqlHTTP({
+        schema: TestSchema
+    }));
+    const server = app.listen();
 
-    //     const response = await request(app)
-    //       .get(urlString({
-    //         query: `
-    //           query helloYou { test(who: "You"), ...shared }
-    //           query helloWorld { test(who: "World"), ...shared }
-    //           query helloDolly { test(who: "Dolly"), ...shared }
-    //           fragment shared on QueryRoot {
-    //             shared: test(who: "Everyone")
-    //           }
-    //         `,
-    //         operationName: 'helloWorld'
-    //       }));
+    const error = await request(server)
+        .get(urlString({
+            query: '{ test, unknownOne, unknownTwo }'
+        }));
+    t.is(error.res.statusCode, 400);
+    t.deepEqual(JSON.parse(error.res.text), {
+        errors: [
+            {
+                message: 'Cannot query field "unknownOne" on type "QueryRoot".',
+                locations: [{ line: 1, column: 9 }]
+            },
+            {
+                message: 'Cannot query field "unknownTwo" on type "QueryRoot".',
+                locations: [{ line: 1, column: 21 }]
+            }
+        ]
+    });
+});
 
-    //     expect(JSON.parse(response.text)).to.deep.equal({
-    //       data: {
-    //         test: 'Hello World',
-    //         shared: 'Hello Everyone',
-    //       }
-    //     });
-    //   });
+test('Errors when missing operation name', async (t) => {
+    const app = new koa();
+    app.use(graphqlHTTP({
+        schema: TestSchema
+    }));
+    const server = app.listen();
 
-    //   it('Reports validation errors', async () => {
-    //     const app = server();
+    const error = await request(server)
+        .get(urlString({
+            query: `
+                query TestQuery { test }
+                mutation TestMutation { writeTest { test } }
+              `
+        }))
+    t.is(error.res.statusCode, 400);
+    t.deepEqual(JSON.parse(error.res.text), {
+        errors: [
+            { message: 'Must provide operation name if query contains multiple operations.' }
+        ]
+    });
+});
 
-    //     app.use(urlString(), graphqlHTTP({ schema: TestSchema }));
+test('Errors when sending a mutation via GET', async (t) => {
+    const app = new koa();
+    app.use(graphqlHTTP({
+        schema: TestSchema
+    }));
+    const server = app.listen();
 
-    //     const error = await catchError(
-    //       request(app)
-    //         .get(urlString({
-    //           query: '{ test, unknownOne, unknownTwo }'
-    //         }))
-    //     );
+    const error = await request(server)
+        .get(urlString({
+            query: 'mutation TestMutation { writeTest { test } }'
+        }))
+    t.is(error.res.statusCode, 405);
+    t.deepEqual(JSON.parse(error.res.text), {
+        errors: [
+            { message: 'Can only perform a mutation operation from a POST request.' }
+        ]
+    });
+});
 
-    //     expect(error.response.status).to.equal(400);
-    //     expect(JSON.parse(error.response.text)).to.deep.equal({
-    //       errors: [
-    //         {
-    //           message: 'Cannot query field "unknownOne" on type "QueryRoot".',
-    //           locations: [ { line: 1, column: 9 } ]
-    //         },
-    //         {
-    //           message: 'Cannot query field "unknownTwo" on type "QueryRoot".',
-    //           locations: [ { line: 1, column: 21 } ]
-    //         }
-    //       ]
-    //     });
-    //   });
+test('Errors when selecting a mutation within a GET', async (t) => {
+    const app = new koa();
+    app.use(graphqlHTTP({
+        schema: TestSchema
+    }));
+    const server = app.listen();
 
-    //   it('Errors when missing operation name', async () => {
-    //     const app = server();
+    const error = await request(server)
+        .get(urlString({
+            operationName: 'TestMutation',
+            query: `
+                query TestQuery { test }
+                mutation TestMutation { writeTest { test } }
+              `
+        }));
+    t.is(error.res.statusCode, 405);
+    t.deepEqual(JSON.parse(error.res.text), {
+        errors: [
+            { message: 'Can only perform a mutation operation from a POST request.' }
+        ]
+    });
+});
 
-    //     app.use(urlString(), graphqlHTTP({ schema: TestSchema }));
 
-    //     const error = await catchError(
-    //       request(app)
-    //         .get(urlString({
-    //           query: `
-    //             query TestQuery { test }
-    //             mutation TestMutation { writeTest { test } }
-    //           `
-    //         }))
-    //     );
+test('Allows a mutation to exist within a GET', async (t) => {
+    const app = new koa();
+    app.use(graphqlHTTP({
+        schema: TestSchema
+    }));
+    const server = app.listen();
 
-    //     expect(error.response.status).to.equal(400);
-    //     expect(JSON.parse(error.response.text)).to.deep.equal({
-    //       errors: [
-    //         { message: 'Must provide operation name if query contains multiple operations.' }
-    //       ]
-    //     });
-    //   });
+    const response = await request(server)
+        .get(urlString({
+            operationName: 'TestQuery',
+            query: `
+              mutation TestMutation { writeTest { test } }
+              query TestQuery { test }
+            `
+        }));
+    t.is(response.res.statusCode, 200);
+    t.deepEqual(JSON.parse(response.res.text), {
+        data: {
+            test: 'Hello World'
+        }
+    });
+});
 
-    //   it('Errors when sending a mutation via GET', async () => {
-    //     const app = server();
 
-    //     app.use(urlString(), graphqlHTTP({ schema: TestSchema }));
+test('Allows passing in a context', async (t) => {
+    const app = new koa();
+    app.use(graphqlHTTP({
+        schema: TestSchema,
+        context: 'testValue'
+    }));
+    const server = app.listen();
 
-    //     const error = await catchError(
-    //       request(app)
-    //         .get(urlString({
-    //           query: 'mutation TestMutation { writeTest { test } }'
-    //         }))
-    //     );
+    const response = await request(server)
+        .get(urlString({
+            operationName: 'TestQuery',
+            query: `
+              query TestQuery { context }
+            `
+        }));
+    t.is(response.res.statusCode, 200);
+    t.deepEqual(JSON.parse(response.res.text), {
+        data: {
+            context: 'testValue'
+        }
+    });
+});
 
-    //     expect(error.response.status).to.equal(405);
-    //     expect(JSON.parse(error.response.text)).to.deep.equal({
-    //       errors: [
-    //         { message: 'Can only perform a mutation operation from a POST request.' }
-    //       ]
-    //     });
-    //   });
+test('Allows returning an options Promise', async (t) => {
+    const app = new koa();
+    app.use(graphqlHTTP(() => Promise.resolve({
+        schema: TestSchema,
+    })));
+    const server = app.listen();
 
-    //   it('Errors when selecting a mutation within a GET', async () => {
-    //     const app = server();
+    const response = await request(server)
+        .get(urlString({
+            query: '{test}'
+        }));
+    t.is(response.res.statusCode, 200);
+    t.is(response.res.text, '{"data":{"test":"Hello World"}}');
+});
 
-    //     app.use(urlString(), graphqlHTTP({ schema: TestSchema }));
 
-    //     const error = await catchError(
-    //       request(app)
-    //         .get(urlString({
-    //           operationName: 'TestMutation',
-    //           query: `
-    //             query TestQuery { test }
-    //             mutation TestMutation { writeTest { test } }
-    //           `
-    //         }))
-    //     );
+test('Errors when sending a mutation via GET', async (t) => {
+    const app = new koa();
+    app.use(graphqlHTTP(() => {
+        throw new Error('I did something wrong');
+    }));
+    const server = app.listen();
 
-    //     expect(error.response.status).to.equal(405);
-    //     expect(JSON.parse(error.response.text)).to.deep.equal({
-    //       errors: [
-    //         { message: 'Can only perform a mutation operation from a POST request.' }
-    //       ]
-    //     });
-    //   });
+    const error = await request(server)
+        .get(urlString({
+            query: '{test}'
+        }));
+    t.is(error.res.statusCode, 500);
+    t.is(error.res.text, '{"errors":[{"message":"I did something wrong"}]}');
+});
 
-    //   it('Allows a mutation to exist within a GET', async () => {
-    //     const app = server();
 
-    //     app.use(urlString(), graphqlHTTP({ schema: TestSchema }));
-
-    //     const response = await request(app)
-    //       .get(urlString({
-    //         operationName: 'TestQuery',
-    //         query: `
-    //           mutation TestMutation { writeTest { test } }
-    //           query TestQuery { test }
-    //         `
-    //       }));
-
-    //     expect(response.status).to.equal(200);
-    //     expect(JSON.parse(response.text)).to.deep.equal({
-    //       data: {
-    //         test: 'Hello World'
-    //       }
-    //     });
-    //   });
-
-    //   it('Allows passing in a context', async () => {
-    //     const app = server();
-
-    //     app.use(urlString(), graphqlHTTP({
-    //       schema: TestSchema,
-    //       context: 'testValue'
-    //     }));
-
-    //     const response = await request(app)
-    //       .get(urlString({
-    //         operationName: 'TestQuery',
-    //         query: `
-    //           query TestQuery { context }
-    //         `
-    //       }));
-
-    //     expect(response.status).to.equal(200);
-    //     expect(JSON.parse(response.text)).to.deep.equal({
-    //       data: {
-    //         context: 'testValue'
-    //       }
-    //     });
-    //   });
-
-    //   it('Allows returning an options Promise', async () => {
-    //     const app = server();
-
-    //     app.use(urlString(), graphqlHTTP(() => Promise.resolve({
-    //       schema: TestSchema,
-    //     })));
-
-    //     const response = await request(app)
-    //       .get(urlString({
-    //         query: '{test}'
-    //       }));
-
-    //     expect(response.text).to.equal(
-    //       '{"data":{"test":"Hello World"}}'
-    //     );
-    //   });
-
-    //   it('Catches errors thrown from options function', async () => {
-    //     const app = server();
-
-    //     app.use(urlString(), graphqlHTTP(() => {
-    //       throw new Error('I did something wrong');
-    //     }));
-
-    //     const req = request(app)
-    //       .get(urlString({
-    //         query: '{test}'
-    //       }));
-
-    //     const error = await catchError(req);
-
-    //     expect(error.response.status).to.equal(500);
-    //     expect(error.response.text).to.equal(
-    //       '{"errors":[{"message":"I did something wrong"}]}'
-    //     );
-    //   });
-    // });
