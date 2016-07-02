@@ -1,0 +1,58 @@
+{
+  "name": "koa-graphql-next",
+  "version": "0.0.1",
+  "description": " GraphQL HTTP middleware for koa v2,ported from express-graphql,change test framework to ava.js.",
+  "main": "index.js",
+  "scripts": {
+    "start": "./node_modules/.bin/nodemon --watch ./ index.babel.js",
+    "test": "ava -v"
+  },
+  "ava": {
+    "files": [
+      "./**/__test__/**/*.spec.js"
+    ],
+    "failFast": true,
+    "tap": true,
+    "require": [
+      "babel-register"
+    ],
+    "babel": "inherit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bidanjun/koa-graphql-next.git"
+  },
+  "keywords": [
+    "koa",
+    "koa2",
+    "graphql",
+    "react",
+    "relay",
+    "ava",
+    "supertest-as-promised"
+  ],
+  "author": "danjun.bi",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/bidanjun/koa-graphql-next/issues"
+  },
+  "homepage": "https://github.com/bidanjun/koa-graphql-next#readme",
+   "dependencies": {
+    "graphql": "^0.6.0",
+    "koa": "^2.0.0"
+  },
+  "devDependencies": {
+    "ava": "^0.15.2",
+    "babel-plugin-transform-async-to-generator": "^6.8.0",
+    "babel-plugin-transform-es2015-destructuring": "^6.9.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.10.3",
+    "babel-plugin-transform-es2015-spread": "^6.8.0",
+    "babel-plugin-transform-object-rest-spread": "^6.8.0",
+    "babel-plugin-transform-runtime": "^6.9.0",
+    "babel-register": "^6.9.0",
+    "babel-runtime": "^6.9.2",
+    "nodemon": "^1.9.2",
+    "supertest": "^1.2.0",
+    "supertest-as-promised": "^3.1.0"
+  }
+}
