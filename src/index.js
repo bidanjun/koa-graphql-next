@@ -9,7 +9,6 @@ import {
 } from 'graphql';
 import httpError from 'http-errors';
 import url from 'url';
-
 import { parseBody } from './parseBody';
 
 export default function graphqlHTTP(options) {
@@ -17,6 +16,7 @@ export default function graphqlHTTP(options) {
         throw new Error('GraphQL middleware requires options.');
     };
     return async (ctx, next) => {
+
         // Higher scoped variables are referred to at various stages in the
         // asyncronous state machine below.
         let schema;
@@ -31,11 +31,12 @@ export default function graphqlHTTP(options) {
         let operationName;
         let validationRules;
 
+        let urlRoot;
         let optionsData;
         let result; //the content of response.body
         try {
             // Resolve the Options to get OptionsData.
-            const optionsData = await Promise.resolve(
+            optionsData = await Promise.resolve(
                 typeof options === 'function' ? options(ctx.request, ctx.response) : options
             );
 
@@ -67,15 +68,20 @@ export default function graphqlHTTP(options) {
                 validationRules = validationRules.concat(optionsData.validationRules);
             }
 
+
+            optionsData.url = optionsData.url || '/graphql';
+            urlRoot = optionsData.url;
+            //add url
+            if (!ctx.url.startsWith(urlRoot)) return next();
+
             // GraphQL HTTP only supports GET and POST methods.
-            if (request.method !== 'GET' && request.method !== 'POST') {
-                response.setHeader('Allow', 'GET, POST');
+            if (ctx.request.method !== 'GET' && ctx.request.method !== 'POST') {
+                ctx.response.set('Allow', 'GET, POST');
                 throw httpError(405, 'GraphQL only supports GET and POST requests.');
             }
 
             //now parse body;
-            let bodyData = await parseBody(ctx.request);
-
+            let bodyData = await parseBody(ctx);
             const urlData = ctx.request.url && url.parse(ctx.request.url, true).query || {};
             showGraphiQL = graphiql && canDisplayGraphiQL(ctx.request, urlData, bodyData);
 
@@ -104,7 +110,7 @@ export default function graphqlHTTP(options) {
             } catch (syntaxError) {
                 // Return 400: Bad Request if any syntax errors errors exist.
                 ctx.response.statusCode = 400;
-                result =  { errors: [syntaxError] };
+                result = { errors: [syntaxError] };
             }
 
             // Validate AST, reporting any errors.
@@ -112,7 +118,7 @@ export default function graphqlHTTP(options) {
             if (validationErrors.length > 0) {
                 // Return 400: Bad Request if any validation errors exist.
                 ctx.response.statusCode = 400;
-                result =  { errors: validationErrors };
+                result = { errors: validationErrors };
             }
 
             // Only query operations are allowed on GET requests.
@@ -124,11 +130,11 @@ export default function graphqlHTTP(options) {
                     // provide it to GraphiQL so that the requester may perform it
                     // themselves if desired.
                     if (showGraphiQL) {
-                       result =  null;
+                        result = null;
                     }
 
                     // Otherwise, report a 405: Method Not Allowed error.
-                    ctx.response.setHeader('Allow', 'POST');
+                    ctx.response.set('Allow', 'POST');
                     throw httpError(
                         405,
                         `Can only perform a ${operationAST.operation} operation ` +
@@ -138,7 +144,7 @@ export default function graphqlHTTP(options) {
             }
             // Perform the execution, reporting any errors creating the context.
             try {
-                return execute(
+                result = await execute(
                     schema,
                     documentAST,
                     rootValue,
@@ -150,34 +156,35 @@ export default function graphqlHTTP(options) {
                 // Return 400: Bad Request if any execution context errors exist.
                 ctx.response.statusCode = 400;
                 result = { errors: [contextError] };
+
             };
 
-    } catch (error) {
-        // If an error was caught, report the httpError status, or 500.
-        ctx.response.status = error.status || 500;
-        result = { errors: [error] };
-    }
+        } catch (error) {
+            // If an error was caught, report the httpError status, or 500.
+            ctx.response.status = error.status || 500;
+            result = { errors: [error] };
+        }
 
-    // Format any encountered errors.
-      if (result && result.errors) {
-        result.errors = result.errors.map(formatErrorFn || formatError);
-      }
-      // If allowed to show GraphiQL, present it instead of JSON.
-      if (showGraphiQL) {
-        const data = renderGraphiQL({
-          query, variables,
-          operationName, result
-        });
-        ctx.response.type='text/html';
-        ctx.response.body=data;
-      } else {
-        // Otherwise, present JSON directly.
-        const data = JSON.stringify(result, null, pretty ? 2 : 0);
-        ctx.type='application/json';
-        ctx.response.body=data;
-      };
+        // Format any encountered errors.
+        if (result && result.errors) {
+            result.errors = result.errors.map(formatErrorFn || formatError);
+        }
+        // If allowed to show GraphiQL, present it instead of JSON.
+        if (showGraphiQL) {
+            const data = renderGraphiQL({
+                query, variables,
+                operationName, result
+            });
+            ctx.response.type = 'text/html';
+            ctx.response.body = data;
+        } else {
+            // Otherwise, present JSON directly.
+            const data = JSON.stringify(result, null, pretty ? 2 : 0);
+            ctx.type = 'application/json';
+            ctx.response.body = data;
+        };
 
-}; //end middleware
+    }; //end middleware
 }; //end graphqlHTTP
 
 
@@ -185,38 +192,37 @@ export default function graphqlHTTP(options) {
  * Helper function to get the GraphQL params from the request.
  */
 function getGraphQLParams(urlData, bodyData) {
-  // GraphQL Query string.
-  const query = urlData.query || bodyData.query;
+    // GraphQL Query string.
+    const query = urlData.query || bodyData.query;
 
-  // Parse the variables if needed.
-  let variables = urlData.variables || bodyData.variables;
-  if (variables && typeof variables === 'string') {
-    try {
-      variables = JSON.parse(variables);
-    } catch (error) {
-      throw httpError(400, 'Variables are invalid JSON.');
+    // Parse the variables if needed.
+    let variables = urlData.variables || bodyData.variables;
+    if (variables && typeof variables === 'string') {
+        try {
+            variables = JSON.parse(variables);
+        } catch (error) {
+            throw httpError(400, 'Variables are invalid JSON.');
+        }
     }
-  }
 
-  // Name of GraphQL operation to execute.
-  const operationName = urlData.operationName || bodyData.operationName;
+    // Name of GraphQL operation to execute.
+    const operationName = urlData.operationName || bodyData.operationName;
 
-  return { query, variables, operationName };
+    return { query, variables, operationName };
 }
 
 /**
  * Helper function to determine if GraphiQL can be displayed.
  */
 function canDisplayGraphiQL(
-  request,
-  urlData,
-  bodyData
+    request,
+    urlData,
+    bodyData
 ) {
-  // If `raw` exists, GraphiQL mode is not enabled.
-  const raw = urlData.raw !== undefined || bodyData.raw !== undefined;
-  // Allowed to show GraphiQL if not requested as raw and this request
-  // prefers HTML over JSON.
-  //modify:using request.accepts instead od accepts.
-  return !raw && request.accepts(request).types([ 'json', 'html' ]) === 'html';
-
+    // If `raw` exists, GraphiQL mode is not enabled.
+    const raw = urlData.raw !== undefined || bodyData.raw !== undefined;
+    // Allowed to show GraphiQL if not requested as raw and this request
+    // prefers HTML over JSON.
+    //modify:using request.accepts instead od accepts.
+    return !raw && request.accepts(request).types(['json', 'html']) === 'html';
 }

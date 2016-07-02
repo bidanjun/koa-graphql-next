@@ -16,7 +16,7 @@ test('requires option factory function to return object', async (t) => {
     app.use(graphqlHTTP(() => null));
     const server = app.listen();
     let result = await request(server).get('/graphql?query={test}');
-    t.is(result.res.statusCode,500);
+    t.is(result.res.statusCode, 500);
     t.deepEqual(JSON.parse(result.res.text), {
         errors: [
             {
@@ -33,12 +33,12 @@ test('requires option factory function to return object or promise of object', a
     app.use(graphqlHTTP(() => Promise.resolve(null)));
     const server = app.listen();
     let result = await request(server).get('/graphql?query={test}');
-    t.is(result.res.statusCode,500);
+    t.is(result.res.statusCode, 500);
     t.deepEqual(JSON.parse(result.res.text), {
         errors: [
             {
                 message:
-                'GraphQL middleware option function must return an options object or a promise which will be resolved to an options object.' 
+                'GraphQL middleware option function must return an options object or a promise which will be resolved to an options object.'
             }
         ]
     });
@@ -49,12 +49,12 @@ test('requires option factory function to return object or promise of object wit
     app.use(graphqlHTTP(() => Promise.resolve({})));
     const server = app.listen();
     let result = await request(server).get('/graphql?query={test}');
-    t.is(result.res.statusCode,500);
+    t.is(result.res.statusCode, 500);
     t.deepEqual(JSON.parse(result.res.text), {
         errors: [
             {
                 message:
-                 'GraphQL middleware options must contain a schema.'
+                'GraphQL middleware options must contain a schema.'
             }
         ]
     });

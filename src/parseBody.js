@@ -13,40 +13,44 @@ import httpError from 'http-errors';
 import querystring from 'querystring';
 import zlib from 'zlib';
 
-export function parseBody(req) {
+export function parseBody(ctx) {
   return new Promise((resolve, reject) => {
-    // If express has already parsed a body as a keyed object, use it.
-    if (typeof req.body === 'object' && !(req.body instanceof Buffer)) {
-      return resolve(req.body);
+    // If koa has already parsed a body as a keyed object, use it.
+    if (typeof ctx.req.body === 'object' && !(ctx.req.body instanceof Buffer)) {
+      return resolve(ctx.req.body);
+    }
+
+    if (typeof ctx.request.body === 'object' && !(ctx.request.body instanceof Buffer)) {
+      return resolve(ctx.request.body);
     }
 
     // Skip requests without content types.
-    if (req.headers['content-type'] === undefined) {
+    if (ctx.req.headers['content-type'] === undefined) {
       return resolve({});
     }
 
     const typeInfo = contentType.parse(req);
 
-    // If express has already parsed a body as a string, and the content-type
+    // If koa has already parsed a body as a string, and the content-type
     // was application/graphql, parse the string body.
-    if (typeof req.body === 'string' &&
+    if (typeof ctx.request.body === 'string' &&
         typeInfo.type === 'application/graphql') {
-      return resolve(graphqlParser(req.body));
+      return resolve(graphqlParser(ctx.request.body));
     }
 
     // Already parsed body we didn't recognise? Parse nothing.
-    if (req.body) {
+    if (ctx.request.body) {
       return resolve({});
     }
 
     // Use the correct body parser based on Content-Type header.
     switch (typeInfo.type) {
       case 'application/graphql':
-        return read(req, typeInfo, graphqlParser, resolve, reject);
+        return read(ctx.req, typeInfo, graphqlParser, resolve, reject);
       case 'application/json':
-        return read(req, typeInfo, jsonEncodedParser, resolve, reject);
+        return read(ctx.req, typeInfo, jsonEncodedParser, resolve, reject);
       case 'application/x-www-form-urlencoded':
-        return read(req, typeInfo, urlEncodedParser, resolve, reject);
+        return read(ctx.req, typeInfo, urlEncodedParser, resolve, reject);
     }
 
     // If no Content-Type header matches, parse nothing.
