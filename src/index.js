@@ -10,6 +10,7 @@ import {
 import httpError from 'http-errors';
 import url from 'url';
 import { parseBody } from './parseBody';
+import { renderGraphiQL } from './renderGraphiQL';
 
 export default function graphqlHTTP(options) {
     if (!options) {
@@ -124,7 +125,6 @@ export default function graphqlHTTP(options) {
                     // Return 400: Bad Request if any validation errors exist.
                     ctx.response.status = 400;
                     resolve({ errors: validationErrors });
-
                 }
 
                 // Only query operations are allowed on GET requests.
@@ -227,5 +227,5 @@ function canDisplayGraphiQL(
     // Allowed to show GraphiQL if not requested as raw and this request
     // prefers HTML over JSON.
     //modify:using request.accepts instead od accepts.
-    return !raw && request.accepts(request).types(['json', 'html']) === 'html';
+    return !raw && request.accepts([ 'json', 'html' ]) === 'html'; //fix:test fail.
 }
