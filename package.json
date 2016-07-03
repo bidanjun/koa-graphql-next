@@ -4,8 +4,11 @@
   "description": "GraphQL HTTP middleware for koa v2,ported from express-graphql,change test framework to ava.",
   "main": "index.js",
   "scripts": {
-    "start": "./node_modules/.bin/nodemon --watch ./ index.babel.js",
-    "test": "ava -v"
+    "start": "\"./node_modules/.bin/nodemon \" --watch ./ index.babel.js",
+    "test": "ava -v",
+    "clean":"./node_modules/.bin/rimraf lib",
+    "build":"./node_modules/.bin/babel src --out-dir lib --source-maps false --ignore __test__ --extensions .js,.jsx --copy-files",
+    "prepublish": "npm run clean && npm run build"
   },
   "ava": {
     "files": [
@@ -49,6 +52,8 @@
   },
   "devDependencies": {
     "ava": "^0.15.2",
+    "babel": "^6.5.2",
+    "babel-cli": "^6.10.1",
     "babel-plugin-transform-async-to-generator": "^6.8.0",
     "babel-plugin-transform-es2015-destructuring": "^6.9.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.10.3",
@@ -59,6 +64,7 @@
     "babel-runtime": "^6.9.2",
     "co-body": "^4.2.0",
     "nodemon": "^1.9.2",
+    "rimraf": "^2.5.2",
     "supertest": "^1.2.0",
     "supertest-as-promised": "^3.1.0"
   }
