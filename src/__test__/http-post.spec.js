@@ -29,7 +29,7 @@ import {
     BREAK
 } from 'graphql';
 import graphqlHTTP from '../';
-import {QueryRootType,TestSchema,urlString,promiseTo} from './schema';
+import {QueryRootType, TestSchema, urlString, promiseTo} from './schema';
 
 test('allows POST with JSON encoding', async (t) => {
     const app = new koa();
@@ -413,7 +413,6 @@ test('does not accept unknown pre-parsed POST string', async (t) => {
     });
 });
 
-
 //without content type,should be fail.
 test('does not accept unknown pre-parsed POST raw Buffer', async (t) => {
     const app = new koa();
@@ -443,4 +442,3 @@ test('does not accept unknown pre-parsed POST raw Buffer', async (t) => {
         errors: [{ message: 'Must provide query string.' }]
     });
 });
-

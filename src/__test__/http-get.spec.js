@@ -30,7 +30,7 @@ import {
 } from 'graphql';
 import graphqlHTTP from '../';
 
-import {QueryRootType,TestSchema,urlString,promiseTo,catchError} from './schema';
+import {QueryRootType, TestSchema, urlString, promiseTo, catchError} from './schema';
 
 test('test harness', async (t) => {
 
@@ -210,7 +210,6 @@ test('Errors when selecting a mutation within a GET', async (t) => {
     });
 });
 
-
 test('Allows a mutation to exist within a GET', async (t) => {
     const app = new koa();
     app.use(graphqlHTTP({
@@ -233,7 +232,6 @@ test('Allows a mutation to exist within a GET', async (t) => {
         }
     });
 });
-
 
 test('Allows passing in a context', async (t) => {
     const app = new koa();
@@ -288,4 +286,3 @@ test('Errors when sending a mutation via GET', async (t) => {
     t.is(error.res.statusCode, 500);
     t.is(error.res.text, '{"errors":[{"message":"I did something wrong"}]}');
 });
-

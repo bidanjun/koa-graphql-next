@@ -227,5 +227,5 @@ function canDisplayGraphiQL(
     // Allowed to show GraphiQL if not requested as raw and this request
     // prefers HTML over JSON.
     //modify:using request.accepts instead od accepts.
-    return !raw && request.accepts([ 'json', 'html' ]) === 'html'; //fix:test fail.
+    return !raw && request.accepts(['json', 'html']) === 'html'; //fix:test fail.
 }

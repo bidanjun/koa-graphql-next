@@ -38,7 +38,6 @@ test('does not renders GraphiQL if no opt-in', async (t) => {
     const response = await request(app.listen())
         .get(urlString({ query: '{test}' }))
         .set('Accept', 'text/html');
-
     t.is(response.res.statusCode, 200);
     t.is(response.type, 'application/json'); //here,in reaponse,not in response.res.
     t.is(response.res.text, '{"data":{"test":"Hello World"}}');
@@ -55,8 +54,8 @@ test('presents GraphiQL when accepting HTML', async (t) => {
         .set('Accept', 'text/html');
     t.is(response.res.statusCode, 200);
     t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
-    t.true((response.res.text).indexOf('"{test}')>-1); //include substring
-    t.true((response.res.text).indexOf('graphiql.min.js')>-1);   
+    t.true((response.res.text).indexOf('"{test}') > -1); //include substring
+    t.true((response.res.text).indexOf('graphiql.min.js') > -1);
 });
 
 test('contains a pre-run response within GraphiQL', async (t) => {
@@ -66,12 +65,12 @@ test('contains a pre-run response within GraphiQL', async (t) => {
         graphiql: true
     }));
     const response = await request(app.listen())
-          .get(urlString({ query: '{test}' }))
-          .set('Accept', 'text/html');
+        .get(urlString({ query: '{test}' }))
+        .set('Accept', 'text/html');
     t.is(response.res.statusCode, 200);
     t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
     t.true((response.res.text).indexOf('response: ' + JSON.stringify(
-            JSON.stringify({ data: { test: 'Hello World' } }, null, 2)))>-1); //include substring
+        JSON.stringify({ data: { test: 'Hello World' } }, null, 2))) > -1); //include substring
 });
 
 test('contains a pre-run operation name within GraphiQL', async (t) => {
