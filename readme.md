@@ -1,25 +1,37 @@
 GraphQL HTTP Server Middleware
 ==============================
 
-[![Build Status](https://travis-ci.org/graphql/express-graphql.svg?branch=master)](https://travis-ci.org/graphql/express-graphql)
-[![Coverage Status](https://coveralls.io/repos/graphql/express-graphql/badge.svg?branch=master&service=github)](https://coveralls.io/github/graphql/express-graphql?branch=master)
+Create a GraphQL HTTP server with koa v2. it's ported from [express-graphql](https://github.com/graphql/express-graphql).
+koa-graphql-next have the same api with express-graphql, and well tested like express-graphql,that's mean,and could be try
+to using in product currently.
 
-Create a GraphQL HTTP server with any HTTP web framework that supports connect styled middleware include [Connect](https://github.com/senchalabs/connect) itself and [Express](http://expressjs.com).
+## Faq
+
+1. only supported koa v2
+2. add url to options,and default url is '/graphql'
+3. using ava.js,instead of mocha in express-graphql.all test from express-graphql (now 64 tests),have been rewrited and passed.
+4. ported from express-graphql,for the code,"line by line",and rewrites all the test of express-graphql,so fix many bug founded in tests.
+   but,thanks for the author of these project:
+   [koa-graphql by chentsulin](https://github.com/chentsulin/koa-graphql) ,thats supported koa v1 and could using in koa2 by 
+      koa-convert.
+   [graffiti](https://github.com/RisingStack/graffiti) it proveder a middleware for koa v1.
+   [koa-graphql by Arch-Mage](https://github.com/Arch-Mage/koa-graphql/tree/next)
+5. for the detail of usage,could read the test,for example how to upload files with graphql.
 
 ## Installation
 
 ```sh
-npm install --save express-graphql
+npm install --save koa-graphql-next
 ```
 
-Then mount `express-graphql` at any point as middleware with your server framework of choice:
+Then use `koa-graphql-next` at any point as a middleware with koa@next:
 
 ```js
-import graphqlHTTP from 'express-graphql';
+import graphqlHTTP from 'koa-graphql-next';
 
-const app = express();
+const app = new koa();
 
-app.use('/graphql', graphqlHTTP({
+app.use( graphqlHTTP({
   schema: MyGraphQLSchema,
   graphiql: true
 }));
@@ -53,6 +65,8 @@ The `graphqlHTTP` function accepts the following options:
   * **`graphiql`**: If `true`, may present [GraphiQL][] when loaded directly
     from a browser (a useful tool for debugging and exploration).
 
+  * **`url`**: added in koa-graphql-next,An optional string for the query url.
+    default value is '/graphql'.
 
 ## Debugging
 
@@ -70,7 +84,7 @@ formatError: error => ({
 
 ## HTTP Usage
 
-Once installed at a path, `express-graphql` will accept requests with
+Once installed at a path, `koa-graphql-next` will accept requests with
 the parameters:
 
   * **`query`**: A string GraphQL document to be executed.
@@ -95,12 +109,12 @@ GraphQL will first look for each parameter in the URL's query-string:
 
 If not found in the query-string, it will look in the POST request body.
 
-If a previous middleware has already parsed the POST body, the `request.body`
-value will be used. Use [`multer`][] or a similar middleware to add support
+If a previous middleware has already parsed the POST body, the `ctx.request.body`
+value will be used. Use [`koa-multer`][] or a similar middleware to add support
 for `multipart/form-data` content, which may be useful for GraphQL mutations
-involving uploading files. See an [example using multer](https://github.com/graphql/express-graphql/blob/master/src/__tests__/http-test.js#L650).
+involving uploading files. 
 
-If the POST body has not yet been parsed, graphql-express will interpret it
+If the POST body has not yet been parsed, koa-graphql-next will interpret it
 depending on the provided *Content-Type* header.
 
   * **`application/json`**: the POST body will be parsed as a JSON
@@ -113,51 +127,7 @@ depending on the provided *Content-Type* header.
     query string, which provides the `query` parameter.
 
 
-## Advanced Options
-
-In order to support advanced scenarios such as installing a GraphQL server on a
-dynamic endpoint or accessing the current authentication information,
-`express-graphql` allows options to be provided as a function of each
-express request, and that function may return either an options object, or a
-Promise for an options object.
-
-This example uses [`express-session`][] to provide GraphQL with the currently
-logged-in session as the `context` of the query execution.
-
-```js
-import session from 'express-session';
-import graphqlHTTP from 'express-graphql';
-
-const app = express();
-
-app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 }}));
-
-app.use('/graphql', graphqlHTTP(request => ({
-  schema: MySessionAwareGraphQLSchema,
-  context: request.session,
-  graphiql: true
-})));
-```
-
-Then in your type definitions, access via the third "context" argument in your
-`resolve` function:
-
-```js
-new GraphQLObjectType({
-  name: 'MyType',
-  fields: {
-    myField: {
-      type: GraphQLString,
-      resolve(parentValue, args, session) {
-        // use `session` here
-      }
-    }
-  }
-});
-```
-
 [`graphql-js`]: https://github.com/graphql/graphql-js
 [`formatError`]: https://github.com/graphql/graphql-js/blob/master/src/error/formatError.js
 [GraphiQL]: https://github.com/graphql/graphiql
-[`multer`]: https://github.com/expressjs/multer
-[`express-session`]: https://github.com/expressjs/session
+
