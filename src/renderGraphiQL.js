@@ -12,7 +12,7 @@ const GRAPHIQL_VERSION = '0.7.1';
 
 // Ensures string values are save to be used within a <script> tag.
 function safeSerialize(data) {
-  return data ? JSON.stringify(data).replace(/\//g, '\\/') : null;
+    return data ? JSON.stringify(data).replace(/\//g, '\\/') : null;
 }
 
 /**
@@ -23,15 +23,15 @@ function safeSerialize(data) {
  * requested query.
  */
 export function renderGraphiQL(data) {
-  const queryString = data.query;
-  const variablesString =
-    data.variables ? JSON.stringify(data.variables, null, 2) : null;
-  const resultString =
-    data.result ? JSON.stringify(data.result, null, 2) : null;
-  const operationName = data.operationName;
+    const queryString = data.query;
+    const variablesString =
+        data.variables ? JSON.stringify(data.variables, null, 2) : null;
+    const resultString =
+        data.result ? JSON.stringify(data.result, null, 2) : null;
+    const operationName = data.operationName;
 
-  /* eslint-disable max-len */
-  return `<!--
+    /* eslint-disable max-len */
+    return `<!--
 The request to this GraphQL server provided the header "Accept: text/html"
 and as a result has been presented GraphiQL - an in-browser IDE for
 exploring GraphQL.

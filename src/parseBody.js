@@ -14,69 +14,73 @@ import querystring from 'querystring';
 import zlib from 'zlib';
 
 export function parseBody(ctx) {
-  return new Promise((resolve, reject) => {
-    // If koa has already parsed a body as a keyed object, use it.
-    if (typeof ctx.req.body === 'object' && !(ctx.req.body instanceof Buffer)) {
-      return resolve(ctx.req.body);
-    }
+    return new Promise((resolve, reject) => {
 
-    if (typeof ctx.request.body === 'object' && !(ctx.request.body instanceof Buffer)) {
-      return resolve(ctx.request.body);
-    }
+        //here,when we use other body parser at first,we should work normally
+        //express body parse test ok,but in koa,koa-bodyparse couldn't work,it can't parse text.
+        //we could use co-body test it.
+        // If koa has already parsed a body as a keyed object, use it.
+        if (typeof ctx.req.body === 'object' && !(ctx.req.body instanceof Buffer)) {
+            return resolve(ctx.req.body);
+        }
 
-    // Skip requests without content types.
-    if (ctx.req.headers['content-type'] === undefined) {
-      return resolve({});
-    }
+        if (typeof ctx.request.body === 'object' && !(ctx.request.body instanceof Buffer)) {
+            return resolve(ctx.request.body);
+        }
 
-    const typeInfo = contentType.parse(req);
+        // Skip requests without content types.
+        if (ctx.req.headers['content-type'] === undefined) {
+            return resolve({});
+        }
 
-    // If koa has already parsed a body as a string, and the content-type
-    // was application/graphql, parse the string body.
-    if (typeof ctx.request.body === 'string' &&
-        typeInfo.type === 'application/graphql') {
-      return resolve(graphqlParser(ctx.request.body));
-    }
+        const typeInfo = contentType.parse(ctx.req);
 
-    // Already parsed body we didn't recognise? Parse nothing.
-    if (ctx.request.body) {
-      return resolve({});
-    }
+        // If koa has already parsed a body as a string, and the content-type
+        // was application/graphql, parse the string body.
+        if (typeof ctx.request.body === 'string' &&
+            typeInfo.type === 'application/graphql') {
+            return resolve(graphqlParser(ctx.request.body));
+        }
 
-    // Use the correct body parser based on Content-Type header.
-    switch (typeInfo.type) {
-      case 'application/graphql':
-        return read(ctx.req, typeInfo, graphqlParser, resolve, reject);
-      case 'application/json':
-        return read(ctx.req, typeInfo, jsonEncodedParser, resolve, reject);
-      case 'application/x-www-form-urlencoded':
-        return read(ctx.req, typeInfo, urlEncodedParser, resolve, reject);
-    }
+        // Already parsed body we didn't recognise? Parse nothing.
+        if (ctx.request.body) {
+            return resolve({});
+        }
 
-    // If no Content-Type header matches, parse nothing.
-    return resolve({});
-  });
+        // Use the correct body parser based on Content-Type header.
+        switch (typeInfo.type) {
+            case 'application/graphql':
+                return read(ctx.req, typeInfo, graphqlParser, resolve, reject);
+            case 'application/json':
+                return read(ctx.req, typeInfo, jsonEncodedParser, resolve, reject);
+            case 'application/x-www-form-urlencoded':
+                return read(ctx.req, typeInfo, urlEncodedParser, resolve, reject);
+        }
+
+        // If no Content-Type header matches, parse nothing.
+        return resolve({});
+    });
 }
 
 function jsonEncodedParser(body) {
-  if (jsonObjRegex.test(body)) {
-    /* eslint-disable no-empty */
-    try {
-      return JSON.parse(body);
-    } catch (error) {
-      // Do nothing
+    if (jsonObjRegex.test(body)) {
+        /* eslint-disable no-empty */
+        try {
+            return JSON.parse(body);
+        } catch (error) {
+            // Do nothing
+        }
+        /* eslint-enable no-empty */
     }
-    /* eslint-enable no-empty */
-  }
-  throw httpError(400, 'POST body sent invalid JSON.');
+    throw httpError(400, 'POST body sent invalid JSON.');
 }
 
 function urlEncodedParser(body) {
-  return querystring.parse(body);
+    return querystring.parse(body);
 }
 
 function graphqlParser(body) {
-  return { query: body };
+    return { query: body };
 }
 
 /**
@@ -92,45 +96,45 @@ const jsonObjRegex = /^[\x20\x09\x0a\x0d]*\{/;
 
 // Read and parse a request body.
 function read(req, typeInfo, parseFn, resolve, reject) {
-  const charset = (typeInfo.parameters.charset || 'utf-8').toLowerCase();
+    const charset = (typeInfo.parameters.charset || 'utf-8').toLowerCase();
 
-  // Assert charset encoding per JSON RFC 7159 sec 8.1
-  if (charset.slice(0, 4) !== 'utf-') {
-    throw httpError(415, `Unsupported charset "${charset.toUpperCase()}".`);
-  }
-
-  // Get content-encoding (e.g. gzip)
-  const encoding =
-    (req.headers['content-encoding'] || 'identity').toLowerCase();
-  const length = encoding === 'identity' ? req.headers['content-length'] : null;
-  const limit = 100 * 1024; // 100kb
-  const stream = decompressed(req, encoding);
-
-  // Read body from stream.
-  getBody(stream, { encoding: charset, length, limit }, function (err, body) {
-    if (err) {
-      return reject(
-        err.type === 'encoding.unsupported' ?
-          httpError(415, `Unsupported charset "${charset.toUpperCase()}".`) :
-          httpError(400, `Invalid body: ${err.message}.`)
-      );
+    // Assert charset encoding per JSON RFC 7159 sec 8.1
+    if (charset.slice(0, 4) !== 'utf-') {
+        throw httpError(415, `Unsupported charset "${charset.toUpperCase()}".`);
     }
 
-    try {
-      // Decode and parse body.
-      return resolve(parseFn(body));
-    } catch (error) {
-      return reject(error);
-    }
-  });
+    // Get content-encoding (e.g. gzip)
+    const encoding =
+        (req.headers['content-encoding'] || 'identity').toLowerCase();
+    const length = encoding === 'identity' ? req.headers['content-length'] : null;
+    const limit = 100 * 1024; // 100kb
+    const stream = decompressed(req, encoding);
+
+    // Read body from stream.
+    getBody(stream, { encoding: charset, length, limit }, function (err, body) {
+        if (err) {
+            return reject(
+                err.type === 'encoding.unsupported' ?
+                    httpError(415, `Unsupported charset "${charset.toUpperCase()}".`) :
+                    httpError(400, `Invalid body: ${err.message}.`)
+            );
+        }
+
+        try {
+            // Decode and parse body.
+            return resolve(parseFn(body));
+        } catch (error) {
+            return reject(error);
+        }
+    });
 }
 
 // Return a decompressed stream, given an encoding.
 function decompressed(req, encoding) {
-  switch (encoding) {
-    case 'identity': return req;
-    case 'deflate': return req.pipe(zlib.createInflate());
-    case 'gzip': return req.pipe(zlib.createGunzip());
-  }
-  throw httpError(415, `Unsupported content-encoding "${encoding}".`);
+    switch (encoding) {
+        case 'identity': return req;
+        case 'deflate': return req.pipe(zlib.createInflate());
+        case 'gzip': return req.pipe(zlib.createGunzip());
+    }
+    throw httpError(415, `Unsupported content-encoding "${encoding}".`);
 }

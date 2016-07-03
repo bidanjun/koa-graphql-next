@@ -35,6 +35,7 @@ export default function graphqlHTTP(options) {
         let optionsData;
         let result; //the content of response.body
         try {
+
             // Resolve the Options to get OptionsData.
             optionsData = await Promise.resolve(
                 typeof options === 'function' ? options(ctx.request, ctx.response) : options
@@ -198,7 +199,6 @@ export default function graphqlHTTP(options) {
 function getGraphQLParams(urlData, bodyData) {
     // GraphQL Query string.
     const query = urlData.query || bodyData.query;
-
     // Parse the variables if needed.
     let variables = urlData.variables || bodyData.variables;
     if (variables && typeof variables === 'string') {

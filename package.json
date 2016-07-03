@@ -42,6 +42,9 @@
     "graphql": "^0.6.0",
     "http-errors": "^1.5.0",
     "koa": "^2.0.0",
+    "koa-bodyparser": "^3.1.0",
+    "koa-multer": "^1.0.0",
+    "multer": "^1.1.0",
     "raw-body": "^2.1.7"
   },
   "devDependencies": {
@@ -54,6 +57,7 @@
     "babel-plugin-transform-runtime": "^6.9.0",
     "babel-register": "^6.9.0",
     "babel-runtime": "^6.9.2",
+    "co-body": "^4.2.0",
     "nodemon": "^1.9.2",
     "supertest": "^1.2.0",
     "supertest-as-promised": "^3.1.0"

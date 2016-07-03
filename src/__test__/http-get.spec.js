@@ -13,11 +13,12 @@
 import { stringify } from 'querystring';
 import url from 'url';
 import zlib from 'zlib';
-//import multer from 'multer';
-//import bodyParser from 'body-parser';
+import multer from 'koa-multer';
+import bodyParser from 'co-body';
 import test from 'ava';
 import request from 'supertest-as-promised';
 import koa from 'koa';
+import rawBody from 'raw-body';
 
 import {
     GraphQLSchema,
@@ -29,67 +30,7 @@ import {
 } from 'graphql';
 import graphqlHTTP from '../';
 
-const QueryRootType = new GraphQLObjectType({
-    name: 'QueryRoot',
-    fields: {
-        test: {
-            type: GraphQLString,
-            args: {
-                who: {
-                    type: GraphQLString
-                }
-            },
-            resolve: (root, { who }) => 'Hello ' + (who || 'World')
-        },
-        thrower: {
-            type: new GraphQLNonNull(GraphQLString),
-            resolve: () => { throw new Error('Throws!'); }
-        },
-        context: {
-            type: GraphQLString,
-            resolve: (obj, args, context) => context,
-        }
-    }
-});
-
-const TestSchema = new GraphQLSchema({
-    query: QueryRootType,
-    mutation: new GraphQLObjectType({
-        name: 'MutationRoot',
-        fields: {
-            writeTest: {
-                type: QueryRootType,
-                resolve: () => ({})
-            }
-        }
-    })
-});
-
-function urlString(urlParams) {
-    let string = '/graphql';
-    if (urlParams) {
-        string += ('?' + stringify(urlParams));
-    }
-    return string;
-}
-
-function catchError(p) {
-    return p.then(
-        () => { throw new Error('Expected to catch error.'); },
-        error => {
-            if (!(error instanceof Error)) {
-                throw new Error('Expected to catch error.');
-            }
-            return error;
-        }
-    );
-}
-
-function promiseTo(fn) {
-    return new Promise((resolve, reject) => {
-        fn((error, result) => error ? reject(error) : resolve(result));
-    });
-}
+import {QueryRootType,TestSchema,urlString,promiseTo,catchError} from './schema';
 
 test('test harness', async (t) => {
 
@@ -347,5 +288,4 @@ test('Errors when sending a mutation via GET', async (t) => {
     t.is(error.res.statusCode, 500);
     t.is(error.res.text, '{"errors":[{"message":"I did something wrong"}]}');
 });
-
 
