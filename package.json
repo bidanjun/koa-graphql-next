@@ -1,82 +1,81 @@
 {
-  "name": "koa-graphql-next",
-  "version": "1.0.0",
-  "description": "GraphQL HTTP middleware for koa v2,ported from express-graphql,change test framework to ava.",
-  "main": "lib/index.js",
-  "directories": {
-    "lib": "./lib"
-  },
-  "files": [
-    "lib",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "start": "\"./node_modules/.bin/nodemon \" --watch ./ index.babel.js",
-    "test": "ava -v",
-    "clean":"./node_modules/.bin/rimraf lib",
-    "build":"./node_modules/.bin/babel src --out-dir lib --source-maps false --ignore __test__ --extensions .js,.jsx --copy-files",
-    "prepublish": "npm run clean && npm run build"
-  },
-  "ava": {
+    "name": "koa-graphql-next",
+    "version": "1.0.1",
+    "description": "GraphQL HTTP middleware for koa v2,ported from express-graphql,change test framework to ava.",
+    "main": "lib/index.js",
+    "directories": {
+        "lib": "./lib"
+    },
     "files": [
-      "./**/__test__/**/*.spec.js"
+        "lib",
+        "README.md",
+        "LICENSE"
     ],
-    "failFast": true,
-    "tap": true,
-    "require": [
-      "babel-register"
+    "scripts": {
+        "start": "\"./node_modules/.bin/nodemon \" --watch ./ index.babel.js",
+        "test": "ava -v",
+        "clean": "./node_modules/.bin/rimraf lib",
+        "build": "./node_modules/.bin/babel src --out-dir lib --source-maps false --ignore __test__ --extensions .js,.jsx --copy-files",
+        "prepublish": "npm run clean && npm run build"
+    },
+    "ava": {
+        "files": [
+            "./**/__test__/**/*.spec.js"
+        ],
+        "failFast": true,
+        "tap": true,
+        "require": [
+            "babel-register"
+        ],
+        "babel": "inherit"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/bidanjun/koa-graphql-next.git"
+    },
+    "keywords": [
+        "koa",
+        "koa2",
+        "graphql",
+        "react",
+        "relay",
+        "ava",
+        "supertest-as-promised"
     ],
-    "babel": "inherit"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/bidanjun/koa-graphql-next.git"
-  },
-  "keywords": [
-    "koa",
-    "koa2",
-    "graphql",
-    "react",
-    "relay",
-    "ava",
-    "supertest-as-promised"
-  ],
-  "author": "danjun.bi",
-  "license": "BSD-3-Clause",
-  "bugs": {
-    "url": "https://github.com/bidanjun/koa-graphql-next/issues"
-  },
-  "homepage": "https://github.com/bidanjun/koa-graphql-next#readme",
-  "dependencies": {
-    "content-type": "^1.0.2",
-    "graphql": "^0.6.0",
-    "http-errors": "^1.5.0",
-    "koa": "^2.0.0",
-    "koa-bodyparser": "^3.1.0",
-    "koa-multer": "^1.0.0",
-    "multer": "^1.1.0",
-    "raw-body": "^2.1.7"
-  },
-  "devDependencies": {
-    "ava": "^0.15.2",
-    "babel": "^6.5.2",
-    "babel-cli": "^6.10.1",
-    "babel-plugin-transform-async-to-generator": "^6.8.0",
-    "babel-plugin-transform-es2015-destructuring": "^6.9.0",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.10.3",
-    "babel-plugin-transform-es2015-spread": "^6.8.0",
-    "babel-plugin-transform-object-rest-spread": "^6.8.0",
-    "babel-plugin-transform-runtime": "^6.9.0",
-    "babel-register": "^6.9.0",
-    "babel-runtime": "^6.9.2",
-    "co-body": "^4.2.0",
-    "nodemon": "^1.9.2",
-    "rimraf": "^2.5.2",
-    "supertest": "^1.2.0",
-    "supertest-as-promised": "^3.1.0"
-  },
-        "peerDependencies": {
-    "graphql": "^0.5.0-b || ^0.6.0"
-  }
+    "author": "danjun.bi",
+    "license": "BSD-3-Clause",
+    "bugs": {
+        "url": "https://github.com/bidanjun/koa-graphql-next/issues"
+    },
+    "homepage": "https://github.com/bidanjun/koa-graphql-next#readme",
+    "dependencies": {
+        "content-type": "^1.0.2",
+        "graphql": "^0.6.0",
+        "http-errors": "^1.5.0",
+        "raw-body": "^2.1.7"
+    },
+    "devDependencies": {
+        "ava": "^0.15.2",
+        "babel": "^6.5.2",
+        "babel-cli": "^6.10.1",
+        "babel-plugin-transform-async-to-generator": "^6.8.0",
+        "babel-plugin-transform-es2015-destructuring": "^6.9.0",
+        "babel-plugin-transform-es2015-modules-commonjs": "^6.10.3",
+        "babel-plugin-transform-es2015-spread": "^6.8.0",
+        "babel-plugin-transform-object-rest-spread": "^6.8.0",
+        "babel-plugin-transform-runtime": "^6.9.0",
+        "babel-register": "^6.9.0",
+        "babel-runtime": "^6.9.2",
+        "co-body": "^4.2.0",
+        "nodemon": "^1.9.2",
+        "rimraf": "^2.5.2",
+        "supertest": "^1.2.0",
+        "supertest-as-promised": "^3.1.0",
+        "koa": "^2.0.0",
+        "koa-bodyparser": "^3.1.0",
+        "koa-multer": "^1.0.0"
+    },
+    "peerDependencies": {
+        "graphql": "^0.5.0-b || ^0.6.0"
+    }
 }
