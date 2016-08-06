@@ -86,11 +86,11 @@ test('supports pretty printing', async (t) => {
     const app = new koa();
     let hasRequest = false;
     let hasResponse = false;
-    app.use(graphqlHTTP((req, res) => {
-        if (req) {
+    app.use(graphqlHTTP((ctx) => {
+        if (ctx.req) {
             hasRequest = true;
         }
-        if (res) {
+        if (ctx.res) {
             hasResponse = true;
         }
         return { schema: TestSchema };

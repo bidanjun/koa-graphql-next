@@ -39,7 +39,7 @@ export default function graphqlHTTP(options) {
 
             // Resolve the Options to get OptionsData.
             optionsData = await Promise.resolve(
-                typeof options === 'function' ? options(ctx.request, ctx.response) : options
+                typeof options === 'function' ? options(ctx) : options
             );
 
             // Assert that optionsData is in fact an Object.

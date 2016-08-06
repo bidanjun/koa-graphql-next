@@ -337,7 +337,7 @@ test('allows for pre-parsed POST bodies', async (t) => {
 
     //note:why should suport provide options by function?
     //here we want use req object to get rootValue
-    app.use(graphqlHTTP((req, ctx) => {
+    app.use(graphqlHTTP((ctx) => {
         return {
             schema: TestMutationSchema,
             rootValue: { request: ctx.req }
