@@ -256,6 +256,38 @@ test('Allows passing in a context', async (t) => {
     });
 });
 
+//v1.04 add test
+test('Uses request as context by default', async (t) => {
+    const app = new koa();
+    app.use(async (ctx, next) => {
+        ctx.foo = 'bar';
+        await next(); //为什么await 才行？
+    });
+    app.use(graphqlHTTP({
+        schema: TestSchema
+    }));
+    const server = app.listen();
+
+    const response = await request(server)
+        .get(urlString({
+            operationName: 'TestQuery',
+            query: `
+              query TestQuery { contextDotFoo }
+            `
+        }));
+
+   
+
+    t.is(response.res.statusCode, 200);
+    t.deepEqual(JSON.parse(response.res.text), {
+        data: {
+            contextDotFoo: 'bar'
+        }
+    });
+});
+
+
+
 test('Allows returning an options Promise', async (t) => {
     const app = new koa();
     app.use(graphqlHTTP(() => Promise.resolve({

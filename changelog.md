@@ -1,10 +1,16 @@
 
-#20160808 v1.0.4
-update graphql to v0.7.0,the release note is here
-https://github.com/graphql/graphql-js/releases/tag/v0.7.0
-and express-graphql add an test for new behaver:
-https://github.com/graphql/express-graphql/commit/536f8653e9e3d8d893ae7a8e02ffed4fe3b4d88b
+#20160827 v1.0.4
+## update graphql to v0.7.0,the release note is here
+    https://github.com/graphql/graphql-js/releases/tag/v0.7.0
+    and express-graphql add an test for new behaver:
+    https://github.com/graphql/express-graphql/commit/536f8653e9e3d8d893ae7a8e02ffed4fe3b4d88b
 
+## context defaulting to request
+   a test of session changed to this way.
+
+## Force client to use UTF-8 encoding by setting encoding in Content-Type
+
+## all changes from express0.53 has been review and fix on 1.04.
 all commit since express-graphql 0.53 here:
 1. [not need]Remove http-errors from devDependencies  
 2. [not need]use res.send directly to send data not need
@@ -17,6 +23,8 @@ all commit since express-graphql 0.53 here:
 9. [changed]Force client to use UTF-8 encoding by setting encoding in Content-Type
 10. [not need]Merge branch 'use-end-to-send-data' 
 11. [not need]Merge branch 'chentsulin-use-end-to-send-data'
+12. [changed]context defaulting to request
+
 #20160808 v1.0.3
   add test for koa-session and koa-generic.session
   update graphql to v0.6.2

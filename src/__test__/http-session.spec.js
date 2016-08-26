@@ -30,16 +30,18 @@ test('handles koa-session for GraphQL', async (t) => {
           fields: {
             sessionId: {
               type: GraphQLString,
-              resolve(parentValue, args, session) {
-                       return session.id;
+              resolve(parentValue, args, contextCtx) {
+                      //here only session.id="first"
+                      //console.log("contextCtx.session is------->",contextCtx.session)
+                       return contextCtx.session.id;
               }
             }
           }
         })
       });
-      app.use(graphqlHTTP((ctx) => ({
+       app.use(graphqlHTTP((ctx) => ({
         schema: schema,
-         context: ctx.session
+         context: ctx
       })));
       
       const response = await request(app.listen())
@@ -57,7 +59,6 @@ test('handles generic session for GraphQL', async (t) => {
       })));
 
       app.use(async (ctx,next) => {
-        console.log(ctx.session);
         ctx.session.id = 'first';        
         await next();
       });
@@ -67,17 +68,18 @@ test('handles generic session for GraphQL', async (t) => {
           fields: {
             sessionId: {
               type: GraphQLString,
-              resolve(parentValue, args, session) {
-                       return session.id;
+              resolve(parentValue, args, contextCtx) {
+                  //here has session id and cookies
+                  //console.log("contextCtx.session is======>",contextCtx.session)
+                       return contextCtx.session.id;
               }
             }
           }
         })
       });
-      app.use(graphqlHTTP((ctx) => ({
-        schema: schema,
-         context: ctx.session
-      })));
+      app.use(graphqlHTTP({
+        schema: schema
+      }));
       
       const response = await request(app.listen())
         .get(urlString({

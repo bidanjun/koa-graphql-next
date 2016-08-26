@@ -27,8 +27,18 @@ export const QueryRootType = new GraphQLObjectType({
         },
         context: {
             type: GraphQLString,
-            resolve: (obj, args, context) => context,
-        }
+            resolve: (obj, args, context) => {
+                //console.log("context is----------->",context)
+                return context;
+            }
+        },
+        contextDotFoo: {
+            type: GraphQLString,
+            resolve: (obj, args, context) => {
+                //console.log("context.foo is=========>",context.foo);
+                return context.foo;
+            },
+        },
     }
 });
 

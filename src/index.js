@@ -59,7 +59,7 @@ export default function graphqlHTTP(options) {
 
             // Collect information from the options data object.
             schema = optionsData.schema;
-            context = optionsData.context;
+            context = optionsData.context || ctx;
             rootValue = optionsData.rootValue;
             pretty = optionsData.pretty;
             graphiql = optionsData.graphiql;
@@ -185,9 +185,10 @@ export default function graphqlHTTP(options) {
         } else {
             // Otherwise, present JSON directly.
             const data = JSON.stringify(result, null, pretty ? 2 : 0);
-            ctx.type = 'application/json; charset=utf-8';
+            ctx.response.type = 'application/json; charset=utf-8';
             ctx.response.body = data;
         };
+        next(); //add next here?
 
     }; //end middleware
 }; //end graphqlHTTP
