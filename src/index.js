@@ -180,12 +180,12 @@ export default function graphqlHTTP(options) {
                 query, variables,
                 operationName, result
             });
-            ctx.response.type = 'text/html';
+            ctx.response.type = 'text/html; charset=utf-8';
             ctx.response.body = data;
         } else {
             // Otherwise, present JSON directly.
             const data = JSON.stringify(result, null, pretty ? 2 : 0);
-            ctx.type = 'application/json';
+            ctx.type = 'application/json; charset=utf-8';
             ctx.response.body = data;
         };
 

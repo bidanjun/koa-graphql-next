@@ -1,4 +1,22 @@
 
+#20160808 v1.0.4
+update graphql to v0.7.0,the release note is here
+https://github.com/graphql/graphql-js/releases/tag/v0.7.0
+and express-graphql add an test for new behaver:
+https://github.com/graphql/express-graphql/commit/536f8653e9e3d8d893ae7a8e02ffed4fe3b4d88b
+
+all commit since express-graphql 0.53 here:
+1. [not need]Remove http-errors from devDependencies  
+2. [not need]use res.send directly to send data not need
+3. [not need]Return main promise not need
+4. [not need]change Middleware definition to return promise not need
+5. [changed]Force client to use UTF-8 encoding by setting encoding in Content-Type
+6. [not need]graphql-express -> express-graphql in readme  
+7. [not need]Return main promise PR#99
+8. [not need]Remove http-errors from devDependencies
+9. [changed]Force client to use UTF-8 encoding by setting encoding in Content-Type
+10. [not need]Merge branch 'use-end-to-send-data' 
+11. [not need]Merge branch 'chentsulin-use-end-to-send-data'
 #20160808 v1.0.3
   add test for koa-session and koa-generic.session
   update graphql to v0.6.2
