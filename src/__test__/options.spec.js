@@ -1,23 +1,22 @@
 import graphqlHTTP from '../';
-import test from 'ava';
 import request from 'supertest-as-promised';
 import koa from 'koa';
 
 //options should be provided
-test('requires an option factory function', async (t) => {
-    t.throws(() => {
+it('requires an option factory function', async () => {
+    expect(() => {
         graphqlHTTP();
-    }, 'GraphQL middleware requires options.'); //must throw an exception
+    }).toThrowError('GraphQL middleware requires options.'); //must throw an exception
 });
 
 //options as function
-test('requires option factory function to return object', async (t) => {
+it('requires option factory function to return object', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => null));
     const server = app.listen();
     let result = await request(server).get('/graphql?query={test}');
-    t.is(result.res.statusCode, 500);
-    t.deepEqual(JSON.parse(result.res.text), {
+    expect(result.res.statusCode).toBe(500);
+    expect(JSON.parse(result.res.text)).toEqual({
         errors: [
             {
                 message:
@@ -28,13 +27,13 @@ test('requires option factory function to return object', async (t) => {
 }); //end function
 
 //options as promise
-test('requires option factory function to return object or promise of object', async (t) => {
+it('requires option factory function to return object or promise of object', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => Promise.resolve(null)));
     const server = app.listen();
     let result = await request(server).get('/graphql?query={test}');
-    t.is(result.res.statusCode, 500);
-    t.deepEqual(JSON.parse(result.res.text), {
+    expect(result.res.statusCode).toBe(500);
+    expect(JSON.parse(result.res.text)).toEqual({
         errors: [
             {
                 message:
@@ -44,13 +43,13 @@ test('requires option factory function to return object or promise of object', a
     });
 }); //end function
 
-test('requires option factory function to return object or promise of object with schema', async (t) => {
+it('requires option factory function to return object or promise of object with schema', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => Promise.resolve({})));
     const server = app.listen();
     let result = await request(server).get('/graphql?query={test}');
-    t.is(result.res.statusCode, 500);
-    t.deepEqual(JSON.parse(result.res.text), {
+    expect(result.res.statusCode).toBe(500);
+    expect(JSON.parse(result.res.text)).toEqual({
         errors: [
             {
                 message:

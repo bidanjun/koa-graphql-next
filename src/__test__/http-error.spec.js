@@ -15,7 +15,6 @@ import url from 'url';
 import zlib from 'zlib';
 import multer from 'koa-multer';
 import bodyParser from 'co-body';
-import test from 'ava';
 import request from 'supertest-as-promised';
 import koa from 'koa';
 import rawBody from 'raw-body';
@@ -30,7 +29,7 @@ import {
 import graphqlHTTP from '../';
 import {QueryRootType, TestSchema, urlString, promiseTo, catchError} from './schema';
 
-test('handles field errors caught by GraphQL', async (t) => {
+it('handles field errors caught by GraphQL', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -39,17 +38,17 @@ test('handles field errors caught by GraphQL', async (t) => {
         .get(urlString({
             query: '{thrower}',
         }));
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: null,
         errors: [{
             message: 'Throws!',
-            locations: [{ line: 1, column: 2 }]
-        }]
+            locations: [{ line: 1, column: 2 }],
+            "path": ["thrower"]}]
     });
 });
 
-test('allows for custom error formatting to sanitize', async (t) => {
+it('allows for custom error formatting to sanitize', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -61,8 +60,8 @@ test('allows for custom error formatting to sanitize', async (t) => {
         .get(urlString({
             query: '{thrower}',
         }));
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: null,
         errors: [{
             message: 'Custom error format: Throws!',
@@ -70,7 +69,7 @@ test('allows for custom error formatting to sanitize', async (t) => {
     });
 });
 
-test('allows for custom error formatting to elaborate', async (t) => {
+it('allows for custom error formatting to elaborate', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -86,8 +85,8 @@ test('allows for custom error formatting to elaborate', async (t) => {
         .get(urlString({
             query: '{thrower}',
         }));
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: null,
         errors: [{
             message: 'Throws!',
@@ -97,7 +96,7 @@ test('allows for custom error formatting to elaborate', async (t) => {
     });
 });
 
-test('handles syntax errors caught by GraphQL', async (t) => {
+it('handles syntax errors caught by GraphQL', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -106,8 +105,8 @@ test('handles syntax errors caught by GraphQL', async (t) => {
         .get(urlString({
             query: 'syntaxerror',
         }));
-    t.is(response.res.statusCode, 400);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(400);
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [{
             message: 'Syntax Error GraphQL request (1:1) ' +
             'Unexpected Name \"syntaxerror\"\n\n1: syntaxerror\n   ^\n',
@@ -116,20 +115,20 @@ test('handles syntax errors caught by GraphQL', async (t) => {
     });
 });
 
-test('handles errors caused by a lack of query', async (t) => {
+it('handles errors caused by a lack of query', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
     }));
     const response = await request(app.listen())
         .get(urlString());
-    t.is(response.res.statusCode, 400);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(400);
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [{ message: 'Must provide query string.' }]
     });
 });
 
-test('handles invalid JSON bodies', async (t) => {
+it('handles invalid JSON bodies', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -138,13 +137,13 @@ test('handles invalid JSON bodies', async (t) => {
         .post(urlString())
         .set('Content-Type', 'application/json')
         .send('[]');
-    t.is(response.res.statusCode, 400);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(400);
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [{ message: 'POST body sent invalid JSON.' }]
     });
 });
 
-test('handles incomplete JSON bodies', async (t) => {
+it('handles incomplete JSON bodies', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -153,13 +152,13 @@ test('handles incomplete JSON bodies', async (t) => {
         .post(urlString())
         .set('Content-Type', 'application/json')
         .send('{"query":');
-    t.is(response.res.statusCode, 400);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(400);
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [{ message: 'POST body sent invalid JSON.' }]
     });
 });
 
-test('handles plain POST text', async (t) => {
+it('handles plain POST text', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -170,13 +169,13 @@ test('handles plain POST text', async (t) => {
         }))
         .set('Content-Type', 'text/plain')
         .send('query helloWho($who: String){ test(who: $who) }');
-    t.is(response.res.statusCode, 400);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(400);
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [{ message: 'Must provide query string.' }]
     });
 });
 
-test('handles unsupported charset', async (t) => {
+it('handles unsupported charset', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => ({
         schema: TestSchema
@@ -185,13 +184,13 @@ test('handles unsupported charset', async (t) => {
         .post(urlString())
         .set('Content-Type', 'application/graphql; charset=ascii')
         .send('{ test(who: "World") }');
-    t.is(response.res.statusCode, 415);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(415);
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [{ message: 'Unsupported charset "ASCII".' }]
     });
 });
 
-test('handles unsupported charset', async (t) => {
+it('handles unsupported charset', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => ({
         schema: TestSchema
@@ -200,13 +199,13 @@ test('handles unsupported charset', async (t) => {
         .post(urlString())
         .set('Content-Type', 'application/graphql; charset=utf-53')
         .send('{ test(who: "World") }');
-    t.is(response.res.statusCode, 415);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(415);
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [{ message: 'Unsupported charset "UTF-53".' }]
     });
 });
 
-test('handles unknown encoding', async (t) => {
+it('handles unknown encoding', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => ({
         schema: TestSchema
@@ -215,13 +214,13 @@ test('handles unknown encoding', async (t) => {
         .post(urlString())
         .set('Content-Encoding', 'garbage')
         .send('!@#$%^*(&^$%#@')
-    t.is(response.res.statusCode, 415);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(415);
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [{ message: 'Unsupported content-encoding "garbage".' }]
     });
 });
 
-test('handles poorly formed variables', async (t) => {
+it('handles poorly formed variables', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => ({
         schema: TestSchema
@@ -231,22 +230,22 @@ test('handles poorly formed variables', async (t) => {
             variables: 'who:You',
             query: 'query helloWho($who: String){ test(who: $who) }'
         }))
-    t.is(response.res.statusCode, 400);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(400);
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [{ message: 'Variables are invalid JSON.' }]
     });
 });
 
-test('handles unsupported HTTP methods', async (t) => {
+it('handles unsupported HTTP methods', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => ({
         schema: TestSchema
     })));
     const response = await request(app.listen())
         .put(urlString({ query: '{test}' }));
-    t.is(response.res.statusCode, 405);
-    t.is(response.res.headers.allow, 'GET, POST');
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(405);
+    expect(response.res.headers.allow).toBe('GET, POST');
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [
             { message: 'GraphQL only supports GET and POST requests.' }
         ]

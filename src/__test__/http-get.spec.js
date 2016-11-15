@@ -15,7 +15,6 @@ import url from 'url';
 import zlib from 'zlib';
 import multer from 'koa-multer';
 import bodyParser from 'co-body';
-import test from 'ava';
 import request from 'supertest-as-promised';
 import koa from 'koa';
 import rawBody from 'raw-body';
@@ -32,7 +31,7 @@ import graphqlHTTP from '../';
 
 import {QueryRootType, TestSchema, urlString, promiseTo, catchError} from './schema';
 
-test('test harness', async (t) => {
+it('test harness', async () => {
 
     let caught;
     try {
@@ -40,18 +39,18 @@ test('test harness', async (t) => {
     } catch (error) {
         caught = error;
     }
-    t.is('Expected to catch error.', caught && caught.message, 'expects to catch errors');
+    expect('Expected to catch error.').toBe(caught && caught.message);
 
     try {
         await catchError(Promise.reject('not a real error'));
     } catch (error) {
         caught = error;
     }
-    t.is('Expected to catch error.', caught && caught.message, 'expects to catch actual errors');
+    expect('Expected to catch error.').toBe(caught && caught.message);
 
     const resolveValue = {};
     const result = await promiseTo(cb => cb(null, resolveValue));
-    t.is(resolveValue, result, 'resolves callback promises');
+    expect(resolveValue).toBe(result);
 
     const rejectError = new Error();
     try {
@@ -59,11 +58,11 @@ test('test harness', async (t) => {
     } catch (error) {
         caught = error;
     }
-    t.is(rejectError, caught, 'rejects callback promises with errors');
+    expect(rejectError).toBe(caught);
 });
 
 //start to test GET functionality
-test('allows GET with query param', async (t) => {
+it('allows GET with query param', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -74,10 +73,10 @@ test('allows GET with query param', async (t) => {
             query: '{test}'
         }));
 
-    t.is(response.res.text, '{"data":{"test":"Hello World"}}');
+    expect(response.res.text).toBe('{"data":{"test":"Hello World"}}');
 });
 
-test('allows GET with variable values', async (t) => {
+it('allows GET with variable values', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -89,11 +88,11 @@ test('allows GET with variable values', async (t) => {
             variables: JSON.stringify({ who: 'Dolly' })
         }));
 
-    t.is('{"data":{"test":"Hello Dolly"}}', response.res.text);
+    expect('{"data":{"test":"Hello Dolly"}}').toBe(response.res.text);
 
 });
 
-test('allows GET with operation name', async (t) => {
+it('allows GET with operation name', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -112,7 +111,7 @@ test('allows GET with operation name', async (t) => {
             operationName: 'helloWorld'
         }));
 
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(JSON.parse(response.res.text)).toEqual({
         data: {
             test: 'Hello World',
             shared: 'Hello Everyone',
@@ -120,7 +119,7 @@ test('allows GET with operation name', async (t) => {
     });
 });
 
-test('Reports validation errors', async (t) => {
+it('Reports validation errors', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -131,8 +130,8 @@ test('Reports validation errors', async (t) => {
         .get(urlString({
             query: '{ test, unknownOne, unknownTwo }'
         }));
-    t.is(error.res.statusCode, 400);
-    t.deepEqual(JSON.parse(error.res.text), {
+    expect(error.res.statusCode).toBe(400);
+    expect(JSON.parse(error.res.text)).toEqual({
         errors: [
             {
                 message: 'Cannot query field "unknownOne" on type "QueryRoot".',
@@ -146,7 +145,7 @@ test('Reports validation errors', async (t) => {
     });
 });
 
-test('Errors when missing operation name', async (t) => {
+it('Errors when missing operation name', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -160,15 +159,15 @@ test('Errors when missing operation name', async (t) => {
                 mutation TestMutation { writeTest { test } }
               `
         }))
-    t.is(error.res.statusCode, 400);
-    t.deepEqual(JSON.parse(error.res.text), {
+    expect(error.res.statusCode).toBe(400);
+    expect(JSON.parse(error.res.text)).toEqual({
         errors: [
             { message: 'Must provide operation name if query contains multiple operations.' }
         ]
     });
 });
 
-test('Errors when sending a mutation via GET', async (t) => {
+it('Errors when sending a mutation via GET', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -179,15 +178,15 @@ test('Errors when sending a mutation via GET', async (t) => {
         .get(urlString({
             query: 'mutation TestMutation { writeTest { test } }'
         }))
-    t.is(error.res.statusCode, 405);
-    t.deepEqual(JSON.parse(error.res.text), {
+    expect(error.res.statusCode).toBe(405);
+    expect(JSON.parse(error.res.text)).toEqual({
         errors: [
             { message: 'Can only perform a mutation operation from a POST request.' }
         ]
     });
 });
 
-test('Errors when selecting a mutation within a GET', async (t) => {
+it('Errors when selecting a mutation within a GET', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -202,15 +201,15 @@ test('Errors when selecting a mutation within a GET', async (t) => {
                 mutation TestMutation { writeTest { test } }
               `
         }));
-    t.is(error.res.statusCode, 405);
-    t.deepEqual(JSON.parse(error.res.text), {
+    expect(error.res.statusCode).toBe(405);
+    expect(JSON.parse(error.res.text)).toEqual({
         errors: [
             { message: 'Can only perform a mutation operation from a POST request.' }
         ]
     });
 });
 
-test('Allows a mutation to exist within a GET', async (t) => {
+it('Allows a mutation to exist within a GET', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -225,15 +224,15 @@ test('Allows a mutation to exist within a GET', async (t) => {
               query TestQuery { test }
             `
         }));
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: {
             test: 'Hello World'
         }
     });
 });
 
-test('Allows passing in a context', async (t) => {
+it('Allows passing in a context', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -248,8 +247,8 @@ test('Allows passing in a context', async (t) => {
               query TestQuery { context }
             `
         }));
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: {
             context: 'testValue'
         }
@@ -257,7 +256,7 @@ test('Allows passing in a context', async (t) => {
 });
 
 //v1.04 add test
-test('Uses request as context by default', async (t) => {
+it('Uses request as context by default', async () => {
     const app = new koa();
     app.use(async (ctx, next) => {
         ctx.foo = 'bar';
@@ -278,8 +277,8 @@ test('Uses request as context by default', async (t) => {
 
    
 
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: {
             contextDotFoo: 'bar'
         }
@@ -288,7 +287,7 @@ test('Uses request as context by default', async (t) => {
 
 
 
-test('Allows returning an options Promise', async (t) => {
+it('Allows returning an options Promise', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => Promise.resolve({
         schema: TestSchema,
@@ -299,12 +298,12 @@ test('Allows returning an options Promise', async (t) => {
         .get(urlString({
             query: '{test}'
         }));
-    t.is(response.res.statusCode, 200);
-    t.is(response.res.text, '{"data":{"test":"Hello World"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.res.text).toBe('{"data":{"test":"Hello World"}}');
 });
 
 
-test('Errors when sending a mutation via GET', async (t) => {
+it('Errors when sending a mutation via GET', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => {
         throw new Error('I did something wrong');
@@ -315,6 +314,6 @@ test('Errors when sending a mutation via GET', async (t) => {
         .get(urlString({
             query: '{test}'
         }));
-    t.is(error.res.statusCode, 500);
-    t.is(error.res.text, '{"errors":[{"message":"I did something wrong"}]}');
+    expect(error.res.statusCode).toBe(500);
+    expect(error.res.text).toBe('{"errors":[{"message":"I did something wrong"}]}');
 });

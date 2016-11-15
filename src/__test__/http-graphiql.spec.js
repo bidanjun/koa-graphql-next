@@ -15,7 +15,6 @@ import url from 'url';
 import zlib from 'zlib';
 import multer from 'koa-multer';
 import bodyParser from 'co-body';
-import test from 'ava';
 import request from 'supertest-as-promised';
 import koa from 'koa';
 import rawBody from 'raw-body';
@@ -30,7 +29,7 @@ import {
 import graphqlHTTP from '../';
 import {QueryRootType, TestSchema, urlString, promiseTo, catchError} from './schema';
 
-test('does not renders GraphiQL if no opt-in', async (t) => {
+it('does not renders GraphiQL if no opt-in', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema
@@ -38,12 +37,12 @@ test('does not renders GraphiQL if no opt-in', async (t) => {
     const response = await request(app.listen())
         .get(urlString({ query: '{test}' }))
         .set('Accept', 'text/html');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'application/json'); //here,in reaponse,not in response.res.
-    t.is(response.res.text, '{"data":{"test":"Hello World"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('application/json'); //here,in reaponse,not in response.res.
+    expect(response.res.text).toBe('{"data":{"test":"Hello World"}}');
 });
 
-test('presents GraphiQL when accepting HTML', async (t) => {
+it('presents GraphiQL when accepting HTML', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -52,13 +51,13 @@ test('presents GraphiQL when accepting HTML', async (t) => {
     const response = await request(app.listen())
         .get(urlString({ query: '{test}' }))
         .set('Accept', 'text/html');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
-    t.true((response.res.text).indexOf('"{test}') > -1); //include substring
-    t.true((response.res.text).indexOf('graphiql.min.js') > -1);
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('text/html'); //here,in reaponse,not in response.res.
+    expect((response.res.text).indexOf('"{test}') > -1).toBe(true); //include substring
+    expect((response.res.text).indexOf('graphiql.min.js') > -1).toBe(true);
 });
 
-test('contains a pre-run response within GraphiQL', async (t) => {
+it('contains a pre-run response within GraphiQL', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -67,13 +66,13 @@ test('contains a pre-run response within GraphiQL', async (t) => {
     const response = await request(app.listen())
         .get(urlString({ query: '{test}' }))
         .set('Accept', 'text/html');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
-    t.true((response.res.text).indexOf('response: ' + JSON.stringify(
-        JSON.stringify({ data: { test: 'Hello World' } }, null, 2))) > -1); //include substring
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('text/html'); //here,in reaponse,not in response.res.
+    expect((response.res.text).indexOf('response: ' + JSON.stringify(
+        JSON.stringify({ data: { test: 'Hello World' } }, null, 2))) > -1).toBe(true); //include substring
 });
 
-test('contains a pre-run operation name within GraphiQL', async (t) => {
+it('contains a pre-run operation name within GraphiQL', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -85,14 +84,14 @@ test('contains a pre-run operation name within GraphiQL', async (t) => {
             operationName: 'B'
         }))
         .set('Accept', 'text/html');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
-    t.true((response.res.text).indexOf('response: ' + JSON.stringify(
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('text/html'); //here,in reaponse,not in response.res.
+    expect((response.res.text).indexOf('response: ' + JSON.stringify(
         JSON.stringify({ data: { b: 'Hello World' } }, null, 2)
-    )) > -1); //include substring
+    )) > -1).toBe(true); //include substring
 });
 
-test('escapes HTML in queries within GraphiQL', async (t) => {
+it('escapes HTML in queries within GraphiQL', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -101,12 +100,12 @@ test('escapes HTML in queries within GraphiQL', async (t) => {
     const response = await request(app.listen())
         .get(urlString({ query: '</script><script>alert(1)</script>' }))
         .set('Accept', 'text/html');
-    t.is(response.res.statusCode, 400);
-    t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
-    t.false((response.res.text).indexOf('</script><script>alert(1)</script>') > -1); //include substring
+    expect(response.res.statusCode).toBe(400);
+    expect(response.type).toBe('text/html'); //here,in reaponse,not in response.res.
+    expect((response.res.text).indexOf('</script><script>alert(1)</script>') > -1).toBe(false); //include substring
 });
 
-test('escapes HTML in variables within GraphiQL', async (t) => {
+it('escapes HTML in variables within GraphiQL', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -119,12 +118,12 @@ test('escapes HTML in variables within GraphiQL', async (t) => {
                 who: '</script><script>alert(1)</script>'
             })
         })).set('Accept', 'text/html');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
-    t.false((response.res.text).indexOf('</script><script>alert(1)</script>') > -1); //include substring
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('text/html'); //here,in reaponse,not in response.res.
+    expect((response.res.text).indexOf('</script><script>alert(1)</script>') > -1).toBe(false); //include substring
 });
 
-test('GraphiQL renders provided variables', async (t) => {
+it('GraphiQL renders provided variables', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -136,13 +135,13 @@ test('GraphiQL renders provided variables', async (t) => {
             variables: JSON.stringify({ who: 'Dolly' })
         }))
         .set('Accept', 'text/html');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
-    t.true((response.res.text).indexOf('variables: ' + JSON.stringify(
-        JSON.stringify({ who: 'Dolly' }, null, 2))) > -1); //include substring
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('text/html'); //here,in reaponse,not in response.res.
+    expect((response.res.text).indexOf('variables: ' + JSON.stringify(
+        JSON.stringify({ who: 'Dolly' }, null, 2))) > -1).toBe(true); //include substring
 });
 
-test('GraphiQL accepts an empty query', async (t) => {
+it('GraphiQL accepts an empty query', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -151,12 +150,12 @@ test('GraphiQL accepts an empty query', async (t) => {
     const response = await request(app.listen())
         .get(urlString())
         .set('Accept', 'text/html');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
-    t.true((response.res.text).indexOf('response: null') > -1); //include substring
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('text/html'); //here,in reaponse,not in response.res.
+    expect((response.res.text).indexOf('response: null') > -1).toBe(true); //include substring
 });
 
-test('GraphiQL accepts a mutation query - does not execute it', async (t) => {
+it('GraphiQL accepts a mutation query - does not execute it', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -167,13 +166,15 @@ test('GraphiQL accepts a mutation query - does not execute it', async (t) => {
             query: 'mutation TestMutation { writeTest { test } }'
         }))
         .set('Accept', 'text/html');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
-    t.true((response.res.text).indexOf('query: "mutation TestMutation { writeTest { test } }"') > -1);
-    t.true((response.res.text).indexOf('response: null') > -1); //include substring
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('text/html'); //here,in reaponse,not in response.res.
+    expect(
+        (response.res.text).indexOf('query: "mutation TestMutation { writeTest { test } }"') > -1
+    ).toBe(true);
+    expect((response.res.text).indexOf('response: null') > -1).toBe(true); //include substring
 });
 
-test('returns HTML if preferred', async (t) => {
+it('returns HTML if preferred', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -182,12 +183,12 @@ test('returns HTML if preferred', async (t) => {
     const response = await request(app.listen())
         .get(urlString({ query: '{test}' }))
         .set('Accept', 'text/html,application/json');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'text/html'); //here,in reaponse,not in response.res.
-    t.true((response.res.text).indexOf('graphiql.min.js') > -1); //include substring
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('text/html'); //here,in reaponse,not in response.res.
+    expect((response.res.text).indexOf('graphiql.min.js') > -1).toBe(true); //include substring
 });
 
-test('returns JSON if preferred', async (t) => {
+it('returns JSON if preferred', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -196,12 +197,12 @@ test('returns JSON if preferred', async (t) => {
     const response = await request(app.listen())
         .get(urlString({ query: '{test}' }))
         .set('Accept', 'application/json,text/html');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'application/json'); //here,in reaponse,not in response.res.
-    t.is(response.res.text, '{"data":{"test":"Hello World"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('application/json'); //here,in reaponse,not in response.res.
+    expect(response.res.text).toBe('{"data":{"test":"Hello World"}}');
 });
 
-test('prefers JSON if unknown accept', async (t) => {
+it('prefers JSON if unknown accept', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -210,12 +211,12 @@ test('prefers JSON if unknown accept', async (t) => {
     const response = await request(app.listen())
         .get(urlString({ query: '{test}' }))
         .set('Accept', 'unknown');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'application/json'); //here,in reaponse,not in response.res.
-    t.is(response.res.text, '{"data":{"test":"Hello World"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('application/json'); //here,in reaponse,not in response.res.
+    expect(response.res.text).toBe('{"data":{"test":"Hello World"}}');
 });
 
-test('prefers JSON if explicitly requested raw response', async (t) => {
+it('prefers JSON if explicitly requested raw response', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -224,8 +225,8 @@ test('prefers JSON if explicitly requested raw response', async (t) => {
     const response = await request(app.listen())
         .get(urlString({ query: '{test}', raw: '' }))
         .set('Accept', 'text/html');
-    t.is(response.res.statusCode, 200);
-    t.is(response.type, 'application/json'); //here,in reaponse,not in response.res.
-    t.is(response.res.text, '{"data":{"test":"Hello World"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.type).toBe('application/json'); //here,in reaponse,not in response.res.
+    expect(response.res.text).toBe('{"data":{"test":"Hello World"}}');
 });
 

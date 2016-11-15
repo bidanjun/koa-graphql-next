@@ -15,7 +15,6 @@ import url from 'url';
 import zlib from 'zlib';
 import multer from 'koa-multer';
 import bodyParser from 'co-body';
-import test from 'ava';
 import request from 'supertest-as-promised';
 import koa from 'koa';
 import rawBody from 'raw-body';
@@ -42,7 +41,7 @@ const AlwaysInvalidRule = function (context) {
     };
 };
 
-test('Do not execute a query if it do not pass the custom validation.', async (t) => {
+it('Do not execute a query if it do not pass the custom validation.', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -53,8 +52,8 @@ test('Do not execute a query if it do not pass the custom validation.', async (t
         .get(urlString({
             query: '{thrower}',
         }))
-    t.is(response.res.statusCode, 400);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(400);
+    expect(JSON.parse(response.res.text)).toEqual({
         errors: [
             {
                 message: 'AlwaysInvalidRule was really invalid!'

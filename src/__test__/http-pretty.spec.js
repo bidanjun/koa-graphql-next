@@ -15,7 +15,6 @@ import url from 'url';
 import zlib from 'zlib';
 import multer from 'koa-multer';
 import bodyParser from 'co-body';
-import test from 'ava';
 import request from 'supertest-as-promised';
 import koa from 'koa';
 import rawBody from 'raw-body';
@@ -31,7 +30,7 @@ import {
 import graphqlHTTP from '../';
 import {QueryRootType, TestSchema, urlString, promiseTo} from './schema';
 
-test('supports pretty printing', async (t) => {
+it('supports pretty printing', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -41,14 +40,14 @@ test('supports pretty printing', async (t) => {
         .get(urlString({
             query: '{test}'
         }));
-    t.is(response.res.text, '{\n' +
+    expect(response.res.text).toBe('{\n' +
         '  "data": {\n' +
         '    "test": "Hello World"\n' +
         '  }\n' +
         '}');
 });
 
-test('supports pretty printing configured by request', async (t) => {
+it('supports pretty printing configured by request', async () => {
     const app = new koa();
     app.use(graphqlHTTP(req => {
         return {
@@ -60,14 +59,14 @@ test('supports pretty printing configured by request', async (t) => {
         .get(urlString({
             query: '{test}'
         }));
-    t.is(defaultResponse.res.text, '{"data":{"test":"Hello World"}}');
+    expect(defaultResponse.res.text).toBe('{"data":{"test":"Hello World"}}');
 
     const prettyResponse = await request(app.listen())
         .get(urlString({
             query: '{test}',
             pretty: 1
         }));
-    t.is(prettyResponse.res.text, '{\n' +
+    expect(prettyResponse.res.text).toBe('{\n' +
         '  "data": {\n' +
         '    "test": "Hello World"\n' +
         '  }\n' +
@@ -78,11 +77,11 @@ test('supports pretty printing configured by request', async (t) => {
             query: '{test}',
             pretty: 0
         }));
-    t.is(unprettyResponse.res.text, '{"data":{"test":"Hello World"}}');
+    expect(unprettyResponse.res.text).toBe('{"data":{"test":"Hello World"}}');
 });
 
 
-test('supports pretty printing', async (t) => {
+it('supports pretty printing', async () => {
     const app = new koa();
     let hasRequest = false;
     let hasResponse = false;
@@ -97,8 +96,8 @@ test('supports pretty printing', async (t) => {
     }));
     const response = await request(app.listen())
         .get(urlString({ query: '{test}' }));
-    t.true(hasRequest);
-    t.true(hasResponse);
+    expect(hasRequest).toBe(true);
+    expect(hasResponse).toBe(true);
 });
 
    

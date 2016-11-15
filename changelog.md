@@ -1,4 +1,10 @@
 
+#20161115 v1.0.5
+
+## change test framwork from ava to jest.
+## update graphql to v0.8.1
+  fix only an http error message test
+
 #20160827 v1.0.4
 ## update graphql to v0.7.0,the release note is here
     https://github.com/graphql/graphql-js/releases/tag/v0.7.0

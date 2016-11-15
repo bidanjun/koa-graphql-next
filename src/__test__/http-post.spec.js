@@ -15,7 +15,6 @@ import url from 'url';
 import zlib from 'zlib';
 import multer from 'koa-multer';
 import bodyParser from 'co-body';
-import test from 'ava';
 import request from 'supertest-as-promised';
 import koa from 'koa';
 import rawBody from 'raw-body';
@@ -31,18 +30,18 @@ import {
 import graphqlHTTP from '../';
 import {QueryRootType, TestSchema, urlString, promiseTo} from './schema';
 
-test('allows POST with JSON encoding', async (t) => {
+it('allows POST with JSON encoding', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
     }));
     const response = await request(app.listen())
         .post(urlString()).send({ query: '{test}' });
-    t.is(response.res.statusCode, 200);
-    t.is(response.res.text, '{"data":{"test":"Hello World"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.res.text).toBe('{"data":{"test":"Hello World"}}');
 });
 
-test('Allows sending a mutation via POST', async (t) => {
+it('Allows sending a mutation via POST', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -50,11 +49,11 @@ test('Allows sending a mutation via POST', async (t) => {
     const response = await request(app.listen())
         .post(urlString())
         .send({ query: 'mutation TestMutation { writeTest { test } }' });
-    t.is(response.res.statusCode, 200);
-    t.is(response.res.text, '{"data":{"writeTest":{"test":"Hello World"}}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.res.text).toBe('{"data":{"writeTest":{"test":"Hello World"}}}');
 });
 
-test('allows POST with url encoding', async (t) => {
+it('allows POST with url encoding', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -62,11 +61,11 @@ test('allows POST with url encoding', async (t) => {
     const response = await request(app.listen())
         .post(urlString())
         .send(stringify({ query: '{test}' }));
-    t.is(response.res.statusCode, 200);
-    t.is(response.res.text, '{"data":{"test":"Hello World"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.res.text).toBe('{"data":{"test":"Hello World"}}');
 });
 
-test('supports POST JSON query with string variables', async (t) => {
+it('supports POST JSON query with string variables', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -78,11 +77,11 @@ test('supports POST JSON query with string variables', async (t) => {
             variables: JSON.stringify({ who: 'Dolly' })
         });
 
-    t.is(response.res.statusCode, 200);
-    t.is(response.res.text, '{"data":{"test":"Hello Dolly"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.res.text).toBe('{"data":{"test":"Hello Dolly"}}');
 });
 
-test('supports POST JSON query with JSON variables', async (t) => {
+it('supports POST JSON query with JSON variables', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -94,11 +93,11 @@ test('supports POST JSON query with JSON variables', async (t) => {
             variables: { who: 'Dolly' }
         });
 
-    t.is(response.res.statusCode, 200);
-    t.is(response.res.text, '{"data":{"test":"Hello Dolly"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.res.text).toBe('{"data":{"test":"Hello Dolly"}}');
 });
 
-test('supports POST url encoded query with string variables', async (t) => {
+it('supports POST url encoded query with string variables', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -110,11 +109,11 @@ test('supports POST url encoded query with string variables', async (t) => {
             variables: JSON.stringify({ who: 'Dolly' })
         }));
 
-    t.is(response.res.statusCode, 200);
-    t.is(response.res.text, '{"data":{"test":"Hello Dolly"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.res.text).toBe('{"data":{"test":"Hello Dolly"}}');
 });
 
-test('supports POST JSON query with GET variable values', async (t) => {
+it('supports POST JSON query with GET variable values', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -125,11 +124,11 @@ test('supports POST JSON query with GET variable values', async (t) => {
         }))
         .send({ query: 'query helloWho($who: String){ test(who: $who) }' });
 
-    t.is(response.res.statusCode, 200);
-    t.is(response.res.text, '{"data":{"test":"Hello Dolly"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.res.text).toBe('{"data":{"test":"Hello Dolly"}}');
 });
 
-test('supports POST url encoded query with GET variable values', async (t) => {
+it('supports POST url encoded query with GET variable values', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -142,11 +141,11 @@ test('supports POST url encoded query with GET variable values', async (t) => {
             query: 'query helloWho($who: String){ test(who: $who) }'
         }));
 
-    t.is(response.res.statusCode, 200);
-    t.is(response.res.text, '{"data":{"test":"Hello Dolly"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.res.text).toBe('{"data":{"test":"Hello Dolly"}}');
 });
 
-test('supports POST raw text query with GET variable values', async (t) => {
+it('supports POST raw text query with GET variable values', async () => {
     const app = new koa();
     app.use(graphqlHTTP({
         schema: TestSchema,
@@ -158,11 +157,11 @@ test('supports POST raw text query with GET variable values', async (t) => {
         .set('Content-Type', 'application/graphql')
         .send('query helloWho($who: String){ test(who: $who) }');
 
-    t.is(response.res.statusCode, 200);
-    t.is(response.res.text, '{"data":{"test":"Hello Dolly"}}');
+    expect(response.res.statusCode).toBe(200);
+    expect(response.res.text).toBe('{"data":{"test":"Hello Dolly"}}');
 });
 
-test('allows POST with operation name', async (t) => {
+it('allows POST with operation name', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => ({
         schema: TestSchema
@@ -181,17 +180,16 @@ test('allows POST with operation name', async (t) => {
             operationName: 'helloWorld'
         });
 
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text),
-        {
-            data: {
-                test: 'Hello World',
-                shared: 'Hello Everyone',
-            }
-        });
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
+        data: {
+            test: 'Hello World',
+            shared: 'Hello Everyone',
+        }
+    });
 });
 
-test('allows POST with operation name', async (t) => {
+it('allows POST with operation name', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => ({
         schema: TestSchema
@@ -211,8 +209,8 @@ test('allows POST with operation name', async (t) => {
           `);
 
 
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: {
             test: 'Hello World',
             shared: 'Hello Everyone',
@@ -220,7 +218,7 @@ test('allows POST with operation name', async (t) => {
     });
 });
 
-test('allows other UTF charsets', async (t) => {
+it('allows other UTF charsets', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => ({
         schema: TestSchema
@@ -232,15 +230,15 @@ test('allows other UTF charsets', async (t) => {
     const response = await req;
 
 
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: {
             test: 'Hello World'
         }
     });
 });
 
-test('allows gzipped POST bodies', async (t) => {
+it('allows gzipped POST bodies', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => ({
         schema: TestSchema
@@ -258,15 +256,15 @@ test('allows gzipped POST bodies', async (t) => {
     const response = await req;
 
 
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: {
             test: 'Hello World'
         }
     });
 });
 
-test('allows deflated POST bodies', async (t) => {
+it('allows deflated POST bodies', async () => {
     const app = new koa();
     app.use(graphqlHTTP(() => ({
         schema: TestSchema
@@ -282,8 +280,8 @@ test('allows deflated POST bodies', async (t) => {
         .set('Content-Encoding', 'deflate');
     req.write(deflatedJson);
     const response = await req;
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: {
             test: 'Hello World'
         }
@@ -292,7 +290,7 @@ test('allows deflated POST bodies', async (t) => {
 
 //note:here,we use koa-multer
 //upload files
-test('allows for pre-parsed POST bodies', async (t) => {
+it('allows for pre-parsed POST bodies', async () => {
     // Note: this is not the only way to handle file uploads with GraphQL,
     // but it is terse and illustrative of using express-graphql and multer
     // together.
@@ -352,8 +350,8 @@ test('allows for pre-parsed POST bodies', async (t) => {
         .attach('file', __filename);
 
 
-    t.is(response.res.statusCode, 200);
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(response.res.statusCode).toBe(200);
+    expect(JSON.parse(response.res.text)).toEqual({
         data: {
             uploadFile: {
                 originalname: 'http-post.spec.js',
@@ -364,7 +362,7 @@ test('allows for pre-parsed POST bodies', async (t) => {
 });
 
 
-test('allows for pre-parsed POST using application/graphql', async (t) => {
+it('allows for pre-parsed POST using application/graphql', async () => {
     const app = new koa();
     app.use(async (ctx, next) => {
         if (ctx.is('application/graphql')) {
@@ -381,7 +379,7 @@ test('allows for pre-parsed POST using application/graphql', async (t) => {
         .set('Content-Type', 'application/graphql');
     req.write(new Buffer('{ test(who: "World") }'));
     const response = await req;
-    t.deepEqual(JSON.parse(response.res.text), {
+    expect(JSON.parse(response.res.text)).toEqual({
         data: {
             test: 'Hello World'
         }
@@ -389,7 +387,7 @@ test('allows for pre-parsed POST using application/graphql', async (t) => {
 });
 
 //without content type,should be fail.
-test('does not accept unknown pre-parsed POST string', async (t) => {
+it('does not accept unknown pre-parsed POST string', async () => {
     const app = new koa();
     app.use(async (ctx, next) => {
         if (ctx.is('*/*')) {
@@ -407,14 +405,14 @@ test('does not accept unknown pre-parsed POST string', async (t) => {
     req.write(new Buffer('{ test(who: "World") }'));
     const error = await req;
 
-    t.is(error.res.statusCode, 400);
-    t.deepEqual(JSON.parse(error.res.text), {
+    expect(error.res.statusCode).toBe(400);
+    expect(JSON.parse(error.res.text)).toEqual({
         errors: [{ message: 'Must provide query string.' }]
     });
 });
 
 //without content type,should be fail.
-test('does not accept unknown pre-parsed POST raw Buffer', async (t) => {
+it('does not accept unknown pre-parsed POST raw Buffer', async () => {
     const app = new koa();
     app.use(async (ctx, next) => {
         if (ctx.is('*/*')) {
@@ -437,8 +435,8 @@ test('does not accept unknown pre-parsed POST raw Buffer', async (t) => {
     req.write(new Buffer('{ test(who: "World") }'));
     const error = await req;
 
-    t.is(error.res.statusCode, 400);
-    t.deepEqual(JSON.parse(error.res.text), {
+    expect(error.res.statusCode).toBe(400);
+    expect(JSON.parse(error.res.text)).toEqual({
         errors: [{ message: 'Must provide query string.' }]
     });
 });
