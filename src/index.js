@@ -32,7 +32,6 @@ export default function graphqlHTTP(options) {
         let operationName;
         let validationRules;
 
-        let urlRoot;
         let optionsData;
         let result; //the content of response.body
         try {
@@ -70,11 +69,6 @@ export default function graphqlHTTP(options) {
                 validationRules = validationRules.concat(optionsData.validationRules);
             }
 
-
-            optionsData.url = optionsData.url || '/graphql';
-            urlRoot = optionsData.url;
-            //add url
-            if (!ctx.url.startsWith(urlRoot)) return next();
 
             // GraphQL HTTP only supports GET and POST methods.
             if (ctx.request.method !== 'GET' && ctx.request.method !== 'POST') {
