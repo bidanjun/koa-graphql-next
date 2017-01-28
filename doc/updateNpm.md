@@ -12,13 +12,13 @@
 
 ## tag it at develop branch
 create tag at develop branch
-git tag "v1.0.2"
+git tag "v1.0.6"
 
 push to remote
-git push origin tag "v1.0.2"
+git push origin tag "v1.0.6"
 
 remove remote tag:
-D:\koa-graphql-next>git push origin --delete tag "v1.0.2"
+D:\koa-graphql-next>git push origin --delete tag "v1.0.6"
 
 
 ## publish to npm
