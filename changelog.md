@@ -1,4 +1,10 @@
 
+#20170129 v1.0.6
+
+##update graphql to v0.9.1
+##using supertest,remove supertest-as-promised
+##add doc for update npm.
+
 #20161115 v1.0.5
 
 ## change test framwork from ava to jest.

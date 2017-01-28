@@ -1,5 +1,5 @@
 import graphqlHTTP from '../';
-import request from 'supertest-as-promised';
+import request from 'supertest';
 import koa from 'koa';
 
 //options should be provided

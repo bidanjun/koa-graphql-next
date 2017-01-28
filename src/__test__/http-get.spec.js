@@ -15,7 +15,7 @@ import url from 'url';
 import zlib from 'zlib';
 import multer from 'koa-multer';
 import bodyParser from 'co-body';
-import request from 'supertest-as-promised';
+import request from 'supertest';
 import koa from 'koa';
 import rawBody from 'raw-body';
 
