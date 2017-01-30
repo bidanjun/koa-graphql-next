@@ -1,4 +1,10 @@
 
+#20170131 v1.0.7
+
+## using yarn
+## update all dependencies
+## move graphql.js to dev dependences
+
 #20170129 v1.0.6
 
 ##update graphql to v0.9.1

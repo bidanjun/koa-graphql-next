@@ -9,11 +9,10 @@ to using in product currently.
 
 1. only supported koa v2
 2. add url to options,and default url is '/graphql'
-3. using ava.js,instead of mocha in express-graphql.all test from express-graphql (now 64 tests),have been rewrited and passed.
+3. using jest and supertest,instead of mocha in express-graphql.all test from express-graphql (now 64 tests),have been rewrited and passed.
 4. ported from express-graphql,for the code,"line by line",and rewrites all the test of express-graphql,so fix many bug founded in tests.
    but,thanks for the author of these project:
-   [koa-graphql by chentsulin](https://github.com/chentsulin/koa-graphql) ,thats supported koa v1 and could using in koa2 by 
-      koa-convert.
+   [koa-graphql by chentsulin](https://github.com/chentsulin/koa-graphql) 
    [graffiti](https://github.com/RisingStack/graffiti) it proveder a middleware for koa v1.
    [koa-graphql by Arch-Mage](https://github.com/Arch-Mage/koa-graphql/tree/next)
 5. for the detail of usage,could read the test,for example how to upload files with graphql.

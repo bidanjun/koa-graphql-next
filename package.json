@@ -1,6 +1,6 @@
 {
   "name": "koa-graphql-next",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "GraphQL HTTP middleware for koa v2,ported from express-graphql,change test framework to ava.",
   "main": "lib/index.js",
   "directories": {
@@ -39,33 +39,31 @@
   "homepage": "https://github.com/bidanjun/koa-graphql-next#readme",
   "dependencies": {
     "content-type": "^1.0.2",
-    "graphql": "^0.9.1",
-    "http-errors": "^1.5.0",
-    "raw-body": "^2.1.7"
+    "http-errors": "^1.5.1",
+    "raw-body": "^2.2.0"
   },
   "devDependencies": {
-    "ava": "^0.15.2",
-    "babel-cli": "^6.11.4",
-    "babel-jest": "^17.0.2",
-    "babel-plugin-transform-async-to-generator": "^6.8.0",
-    "babel-plugin-transform-es2015-destructuring": "^6.9.0",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.11.5",
-    "babel-plugin-transform-es2015-spread": "^6.8.0",
-    "babel-plugin-transform-object-rest-spread": "^6.8.0",
-    "babel-plugin-transform-runtime": "^6.12.0",
-    "babel-register": "^6.11.6",
-    "babel-runtime": "^6.11.6",
+    "babel-cli": "^6.22.2",
+    "babel-jest": "^18.0.0",
+    "babel-plugin-transform-async-to-generator": "^6.22.0",
+    "babel-plugin-transform-es2015-destructuring": "^6.22.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.22.0",
+    "babel-plugin-transform-es2015-spread": "^6.22.0",
+    "babel-plugin-transform-object-rest-spread": "^6.22.0",
+    "babel-plugin-transform-runtime": "^6.22.0",
+    "babel-register": "^6.22.0",
+    "babel-runtime": "^6.22.0",
     "co-body": "^4.2.0",
-    "jest": "^17.0.2",
-    "koa": "^2.0.0",
-    "koa-bodyparser": "^3.2.0",
+    "graphql": "^0.9.1",
+    "jest": "^18.1.0",
+    "koa": "next",
+    "koa-bodyparser": "next",
     "koa-convert": "^1.2.0",
-    "koa-generic-session": "^1.11.3",
-    "koa-multer": "^1.0.0",
-    "koa-session": "^3.3.1",
-    "nodemon": "^1.10.0",
+    "koa-generic-session": "^1.11.5",
+    "koa-multer": "^1.0.1",
+    "koa-session": "^3.4.0",
     "rimraf": "^2.5.4",
-    "supertest": "^1.2.0"
+    "supertest": "^3.0.0"
   },
   "peerDependencies": {
     "graphql": "^0.5.0-b || ^0.9.1"
