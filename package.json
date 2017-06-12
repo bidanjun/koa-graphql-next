@@ -15,8 +15,7 @@
     "start": "\"./node_modules/.bin/nodemon \" --watch ./ index.babel.js",
     "test": "./node_modules/.bin/jest",
     "clean": "./node_modules/.bin/rimraf lib",
-    "build": "./node_modules/.bin/babel src --out-dir lib --source-maps false --ignore __test__ --extensions .js,.jsx --copy-files",
-    "prepublish": "npm run clean && npm run build"
+    "build": "./node_modules/.bin/babel src --out-dir lib --source-maps false --ignore __test__ --extensions .js,.jsx --copy-files"
   },
   "repository": {
     "type": "git",
