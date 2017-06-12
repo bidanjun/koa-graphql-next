@@ -1,4 +1,8 @@
 
+# 20170613 v1.0.9
+1. update all dependecies
+2. update graphql to v0.10.1
+
 # 20170226 v1.0.8
 
 ## using new graphiql version 0.9.1
