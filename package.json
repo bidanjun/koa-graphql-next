@@ -1,6 +1,6 @@
 {
   "name": "koa-graphql-next",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "GraphQL HTTP middleware for koa v2,ported from express-graphql,change test framework to ava.",
   "main": "lib/index.js",
   "directories": {
@@ -78,7 +78,7 @@
     ],
     "transform": {
       ".*": "./node_modules/babel-jest"
-    },    
+    },
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/build/",
